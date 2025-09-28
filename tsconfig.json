@@ -26,6 +26,7 @@
       "@/types/*": ["./src/types/*"],
       "@/hooks/*": ["./src/hooks/*"],
       "@/store/*": ["./src/lib/redux/*"],
+      "@/generated/*": ["./generated/*"],
       "@/api/*": ["./generated/api/*"],
       "@/public/*": ["./public/*"]
     }

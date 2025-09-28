@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "EduSystem - Hệ thống học tập trực tuyến",
-  description: "Nền tảng học tập hiện đại giúp bạn nâng cao kiến thức và kỹ năng",
+  description:
+    "Nền tảng học tập hiện đại giúp bạn nâng cao kiến thức và kỹ năng",
 };
 
 export default function RootLayout({
@@ -24,13 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

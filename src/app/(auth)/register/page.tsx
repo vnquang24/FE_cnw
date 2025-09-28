@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Form, Input, Button, Card, Typography, Space, Divider } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined, UserAddOutlined } from '@ant-design/icons';
-import { register } from '@/lib/auth';
-import { showToast } from '@/lib/toast';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Form, Input, Button, Card, Typography, Space, Divider } from "antd";
+import {
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  LockOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
+import { register } from "@/lib/auth";
+import { showToast } from "@/lib/toast";
 
 const { Title, Text } = Typography;
 
@@ -25,27 +31,27 @@ export default function RegisterPage() {
 
   const onFinish = async (values: RegisterFormData) => {
     setIsLoading(true);
-    const loadingToast = showToast.loading('Đang tạo tài khoản...');
+    const loadingToast = showToast.loading("Đang tạo tài khoản...");
 
     try {
       const success = await register(
         values.email,
         values.password,
         values.name,
-        values.phone
+        values.phone,
       );
-      
+
       if (success) {
         showToast.dismiss(loadingToast);
-        showToast.success('Đăng ký thành công!');
-        router.push('/dashboard');
+        showToast.success("Đăng ký thành công!");
+        router.push("/main/dashboard");
       } else {
         showToast.dismiss(loadingToast);
-        showToast.error('Đăng ký thất bại. Email có thể đã được sử dụng.');
+        showToast.error("Đăng ký thất bại. Email có thể đã được sử dụng.");
       }
     } catch (err) {
       showToast.dismiss(loadingToast);
-      showToast.error('Có lỗi xảy ra khi đăng ký!');
+      showToast.error("Có lỗi xảy ra khi đăng ký!");
     } finally {
       setIsLoading(false);
     }
@@ -53,12 +59,15 @@ export default function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-96 py-12 px-4">
-      <Card className="max-w-md w-full shadow-xl" styles={{ body: { padding: '32px' } }}>
+      <Card
+        className="max-w-md w-full shadow-xl"
+        styles={{ body: { padding: "32px" } }}
+      >
         <div className="text-center mb-8">
           <Title level={2}>Đăng ký</Title>
           <Text type="secondary">Tạo tài khoản để bắt đầu học tập</Text>
         </div>
-        
+
         <Form
           form={form}
           name="register"
@@ -70,8 +79,8 @@ export default function RegisterPage() {
             label="Họ và tên"
             name="name"
             rules={[
-              { required: true, message: 'Vui lòng nhập họ và tên!' },
-              { min: 2, message: 'Họ và tên phải có ít nhất 2 ký tự!' }
+              { required: true, message: "Vui lòng nhập họ và tên!" },
+              { min: 2, message: "Họ và tên phải có ít nhất 2 ký tự!" },
             ]}
           >
             <Input prefix={<UserOutlined />} placeholder="Nhập họ và tên" />
@@ -81,8 +90,8 @@ export default function RegisterPage() {
             label="Email"
             name="email"
             rules={[
-              { required: true, message: 'Vui lòng nhập email!' },
-              { type: 'email', message: 'Email không hợp lệ!' }
+              { required: true, message: "Vui lòng nhập email!" },
+              { type: "email", message: "Email không hợp lệ!" },
             ]}
           >
             <Input prefix={<MailOutlined />} placeholder="Nhập email" />
@@ -92,41 +101,55 @@ export default function RegisterPage() {
             label="Số điện thoại"
             name="phone"
             rules={[
-              { required: true, message: 'Vui lòng nhập số điện thoại!' },
-              { pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại không hợp lệ!' }
+              { required: true, message: "Vui lòng nhập số điện thoại!" },
+              {
+                pattern: /^[0-9]{10,11}$/,
+                message: "Số điện thoại không hợp lệ!",
+              },
             ]}
           >
-            <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại" />
+            <Input
+              prefix={<PhoneOutlined />}
+              placeholder="Nhập số điện thoại"
+            />
           </Form.Item>
 
           <Form.Item
             label="Mật khẩu"
             name="password"
             rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu!' },
-              { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
+              { required: true, message: "Vui lòng nhập mật khẩu!" },
+              { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
             ]}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu" />
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Nhập mật khẩu"
+            />
           </Form.Item>
 
           <Form.Item
             label="Xác nhận mật khẩu"
             name="confirmPassword"
-            dependencies={['password']}
+            dependencies={["password"]}
             rules={[
-              { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
+              { required: true, message: "Vui lòng xác nhận mật khẩu!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
+                  if (!value || getFieldValue("password") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                  return Promise.reject(
+                    new Error("Mật khẩu xác nhận không khớp!"),
+                  );
                 },
-              })
+              }),
             ]}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="Nhập lại mật khẩu" />
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Nhập lại mật khẩu"
+            />
           </Form.Item>
 
           <Form.Item>
@@ -137,7 +160,7 @@ export default function RegisterPage() {
               icon={<UserAddOutlined />}
               className="w-full h-12"
             >
-              {isLoading ? 'Đang tạo tài khoản...' : 'Đăng ký'}
+              {isLoading ? "Đang tạo tài khoản..." : "Đăng ký"}
             </Button>
           </Form.Item>
         </Form>
@@ -149,7 +172,10 @@ export default function RegisterPage() {
         <div className="text-center">
           <Space>
             <Text type="secondary">Đã có tài khoản?</Text>
-            <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link
+              href="/login"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
               Đăng nhập ngay
             </Link>
           </Space>

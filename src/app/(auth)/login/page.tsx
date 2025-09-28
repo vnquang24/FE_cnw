@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Form, Input, Button, Card, Typography, Space, Divider } from 'antd';
-import { MailOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
-import { login } from '@/lib/auth';
-import { showToast } from '@/lib/toast';
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Form, Input, Button, Card, Typography, Space, Divider } from "antd";
+import { MailOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons";
+import { login } from "@/lib/auth";
+import { showToast } from "@/lib/toast";
 
 const { Title, Text } = Typography;
 
@@ -23,38 +23,38 @@ export default function LoginPage() {
 
   const onFinish = async (values: LoginFormData) => {
     setIsLoading(true);
-    const loadingToast = showToast.loading('Đang đăng nhập...');
+    const loadingToast = showToast.loading("Đang đăng nhập...");
 
     try {
       const success = await login(values.email, values.password);
       if (success) {
         showToast.dismiss(loadingToast);
-        showToast.success('Đăng nhập thành công!');
-        
+        showToast.success("Đăng nhập thành công!");
+
         // Lấy returnUrl từ query params hoặc mặc định là dashboard
-        const returnUrl = searchParams?.get('returnUrl') || '/dashboard';
+        const returnUrl = searchParams?.get("returnUrl") || "/main/dashboard";
         router.push(returnUrl);
       } else {
         showToast.dismiss(loadingToast);
-        showToast.error('Email hoặc mật khẩu không đúng');
+        showToast.error("Email hoặc mật khẩu không đúng");
       }
     } catch (err) {
       showToast.dismiss(loadingToast);
-      showToast.error('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!');
+      showToast.error("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!");
     } finally {
       setIsLoading(false);
     }
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    showToast.error('Vui lòng kiểm tra lại thông tin đăng nhập');
+    showToast.error("Vui lòng kiểm tra lại thông tin đăng nhập");
   };
 
   return (
     <div className="flex items-center justify-center min-h-96 py-12 px-4 sm:px-6 lg:px-8">
-      <Card 
+      <Card
         className="max-w-md w-full shadow-xl"
-        styles={{ body: { padding: '32px' } }}
+        styles={{ body: { padding: "32px" } }}
       >
         <div className="text-center mb-8">
           <Title level={2} className="!mb-2">
@@ -64,7 +64,7 @@ export default function LoginPage() {
             Chào mừng bạn quay trở lại
           </Text>
         </div>
-        
+
         <Form
           form={form}
           name="login"
@@ -80,17 +80,17 @@ export default function LoginPage() {
             rules={[
               {
                 required: true,
-                message: 'Vui lòng nhập email!',
+                message: "Vui lòng nhập email!",
               },
               {
-                type: 'email',
-                message: 'Email không hợp lệ!',
+                type: "email",
+                message: "Email không hợp lệ!",
               },
             ]}
           >
-            <Input 
+            <Input
               prefix={<MailOutlined className="text-gray-400" />}
-              placeholder="Nhập địa chỉ email" 
+              placeholder="Nhập địa chỉ email"
               autoComplete="email"
             />
           </Form.Item>
@@ -101,11 +101,11 @@ export default function LoginPage() {
             rules={[
               {
                 required: true,
-                message: 'Vui lòng nhập mật khẩu!',
+                message: "Vui lòng nhập mật khẩu!",
               },
               {
                 min: 0,
-                message: 'Mật khẩu phải có ít nhất 6 ký tự!',
+                message: "Mật khẩu phải có ít nhất 6 ký tự!",
               },
             ]}
           >
@@ -124,7 +124,7 @@ export default function LoginPage() {
               icon={<LoginOutlined />}
               className="w-full h-12 text-base font-medium"
             >
-              {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
           </Form.Item>
         </Form>
@@ -136,7 +136,10 @@ export default function LoginPage() {
         <div className="text-center">
           <Space>
             <Text type="secondary">Chưa có tài khoản?</Text>
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+            <Link
+              href="/register"
+              className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+            >
               Đăng ký ngay
             </Link>
           </Space>

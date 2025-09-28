@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { isTokenValid } from '@/lib/auth';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { isTokenValid } from "@/lib/auth";
 
 export default function HomePage() {
   const router = useRouter();
@@ -12,13 +12,13 @@ export default function HomePage() {
       try {
         const valid = await isTokenValid();
         if (valid) {
-          router.push('/dashboard');
+          router.push("/main/dashboard");
         } else {
-          router.push('/login');
+          router.push("/login");
         }
       } catch (error) {
         // Nếu có lỗi, redirect đến login
-        router.push('/login');
+        router.push("/public/dashboard");
       }
     };
 
