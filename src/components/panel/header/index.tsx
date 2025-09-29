@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({ pathName, user }) => {
   };
 
   const handleDevicesClick = () => {
-    router.push("/main/devices");
+    router.push("/admin/devices");
   };
 
   const menuItems: MenuProps["items"] = [

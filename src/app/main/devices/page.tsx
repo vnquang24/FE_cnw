@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useFindManyDevice } from "@/generated/hooks/index";
+import { useFindManyDevice } from "@/generated/hooks";
 import { useAuthControllerDeleteDevice } from "@/generated/api/cnwComponents";
 
 import {

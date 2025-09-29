@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Form, Input, Button, Card, Typography, Space, Divider } from "antd";
 import { MailOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons";
-import { login } from "@/lib/auth";
+import { getUserInfo, login, type UserRole } from "@/lib/auth";
 import { showToast } from "@/lib/toast";
 
 const { Title, Text } = Typography;
@@ -31,9 +31,34 @@ export default function LoginPage() {
         showToast.dismiss(loadingToast);
         showToast.success("Đăng nhập thành công!");
 
-        // Lấy returnUrl từ query params hoặc mặc định là dashboard
-        const returnUrl = searchParams?.get("returnUrl") || "/main/dashboard";
-        router.push(returnUrl);
+        const userInfo = getUserInfo();
+        console.log("User info after login:", userInfo);
+        const role = userInfo?.role as UserRole | undefined;
+
+        const getDefaultRoute = (userRole?: UserRole) => {
+          if (userRole === "ADMIN") return "/admin/dashboard";
+          if (userRole === "USER") return "/user/courses";
+          return "/admin/dashboard";
+        };
+
+        const isRouteAllowed = (
+          userRole: UserRole | undefined,
+          target: string,
+        ) => {
+          if (!target) return false;
+          if (userRole === "ADMIN") return target.startsWith("/admin");
+          if (userRole === "USER") return target.startsWith("/user");
+          return false;
+        };
+
+        const requestedReturnUrl = searchParams?.get("returnUrl") || "";
+        const fallbackRoute = getDefaultRoute(role);
+        const safeDestination =
+          requestedReturnUrl && isRouteAllowed(role, requestedReturnUrl)
+            ? requestedReturnUrl
+            : fallbackRoute;
+
+        router.push(safeDestination);
       } else {
         showToast.dismiss(loadingToast);
         showToast.error("Email hoặc mật khẩu không đúng");

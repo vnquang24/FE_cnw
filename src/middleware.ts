@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getUserInfo } from "./lib/auth";
+
+type UserRole = "ADMIN" | "USER";
 
 // Định nghĩa danh sách các routes công khai không cần xác thực
 const publicRoutes = [
@@ -11,66 +14,77 @@ const publicRoutes = [
   "/api/public", // API routes công khai (nếu có)
 ];
 
-// Routes được bảo vệ cần xác thực (tất cả routes trong /main)
-const protectedRoutes = [
-  "/main", // Tất cả routes trong main (/main/*)
-];
+const ADMIN_PREFIX = "/admin";
+const USER_PREFIX = "/user";
+
+const DEFAULT_ROUTE: Record<UserRole, string> = {
+  ADMIN: `${ADMIN_PREFIX}/dashboard`,
+  USER: `${USER_PREFIX}/courses`,
+};
 
 // Routes API được bảo vệ
 const protectedApiRoutes = [
   "/api/courses",
   "/api/lessons",
-  "/api/users",
+  "/api/admins",
   "/api/tests",
   "/api/components",
 ];
 
-// Tối ưu middleware để xử lý nhiều requests cùng lúc
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get("accessToken")?.value;
+  const role = decodeRoleFromToken(accessToken);
+  const infor = getUserInfo();
+  console.log("THOONG TIN NÈ", infor);
+  const redirect = (target: string) =>
+    NextResponse.redirect(new URL(target, request.url));
+  const defaultRoute = role ? DEFAULT_ROUTE[role] : "/public";
+  const redirectToLoginWithReturn = () => {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("returnUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  };
 
-  // Chỉ log khi cần debug
-  // console.log(`Middleware: ${pathname}, Token: ${accessToken ? 'có' : 'không'}`);
-
-  // Kiểm tra nếu đang ở trang chủ
   if (pathname === "/") {
-    // Nếu đã đăng nhập, chuyển đến dashboard
-    if (accessToken) {
-      // console.log('Root -> Dashboard (có token)');
-      return NextResponse.redirect(new URL("/main/dashboard", request.url));
+    if (accessToken && role) {
+      return redirect(defaultRoute);
     }
-    // Nếu chưa đăng nhập, chuyển đến public page
-    // console.log('Root -> Public (không có token)');
-    return NextResponse.redirect(new URL("/public", request.url));
+    return redirect("/public");
   }
 
-  // Kiểm tra routes công khai - cho phép truy cập tự do
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
-    // Nếu đã đăng nhập và đang truy cập trang auth (login/register), chuyển về dashboard
     if (
       accessToken &&
+      role &&
       (pathname.startsWith("/login") || pathname.startsWith("/register"))
     ) {
-      return NextResponse.redirect(new URL("/main/dashboard", request.url));
+      return redirect(defaultRoute);
     }
     return NextResponse.next();
   }
 
-  // Kiểm tra routes được bảo vệ (main routes)
-  if (protectedRoutes.some((route) => pathname.startsWith(route))) {
-    // Nếu chưa đăng nhập, chuyển đến trang login
+  if (pathname.startsWith(ADMIN_PREFIX)) {
     if (!accessToken) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("returnUrl", pathname);
-      return NextResponse.redirect(loginUrl);
+      return redirectToLoginWithReturn();
+    }
+    if (role !== "ADMIN") {
+      return redirect(role ? DEFAULT_ROUTE[role] : "/public");
     }
     return NextResponse.next();
   }
 
-  // Kiểm tra API routes được bảo vệ
+  if (pathname.startsWith(USER_PREFIX)) {
+    if (!accessToken) {
+      return redirectToLoginWithReturn();
+    }
+    if (role !== "USER") {
+      return redirect(role ? DEFAULT_ROUTE[role] : "/public");
+    }
+    return NextResponse.next();
+  }
+
   if (protectedApiRoutes.some((route) => pathname.startsWith(route))) {
-    // Nếu chưa đăng nhập, trả về 401 Unauthorized
     if (!accessToken) {
       return new NextResponse(
         JSON.stringify({ success: false, message: "Authentication required" }),
@@ -80,26 +94,61 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Đối với các route khác không được định nghĩa rõ ràng
   if (!accessToken) {
-    // Nếu không có token và không phải là public routes, chuyển về public
     if (
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/register") &&
       !pathname.startsWith("/public")
     ) {
-      // console.log(`Fallback -> Public (không có token): ${pathname}`);
-      return NextResponse.redirect(new URL("/public", request.url));
+      return redirect("/public");
     }
-  } else {
-    // Nếu có token và không phải là protected routes, cho phép truy cập
-    if (!pathname.startsWith("/main")) {
-      // console.log(`Allow access với token: ${pathname}`);
-      return NextResponse.next();
+  } else if (role) {
+    if (role === "ADMIN" && pathname.startsWith(USER_PREFIX)) {
+      return redirect(DEFAULT_ROUTE.ADMIN);
+    }
+    if (role === "USER" && pathname.startsWith(ADMIN_PREFIX)) {
+      return redirect(DEFAULT_ROUTE.USER);
     }
   }
 
   return NextResponse.next();
+}
+
+function decodeRoleFromToken(token?: string): UserRole | null {
+  if (!token) return null;
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const payloadSegment = parts[1];
+    const decodedPayload = base64UrlDecode(payloadSegment);
+    const parsed = JSON.parse(decodedPayload) as { role?: string } | undefined;
+    console.log("Decoded token payload:", parsed);
+    if (parsed?.role === "ADMIN" || parsed?.role === "USER") {
+      return parsed.role;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function base64UrlDecode(value: string): string {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padLength = (4 - (padded.length % 4)) % 4;
+  const normalized = padded + "=".repeat(padLength);
+
+  if (typeof globalThis.atob === "function") {
+    return globalThis.atob(normalized);
+  }
+
+  const bufferCtor = (
+    globalThis as typeof globalThis & { Buffer?: typeof Buffer }
+  ).Buffer;
+  if (bufferCtor) {
+    return bufferCtor.from(normalized, "base64").toString("utf-8");
+  }
+
+  throw new Error("No base64 decoder available");
 }
 
 // Chỉ định các routes cần được middleware xử lý

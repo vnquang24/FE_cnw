@@ -8,10 +8,14 @@ import {
 import { jwtDecode } from "jwt-decode";
 import ms from "ms"; // Thêm import này
 
+export type UserRole = "ADMIN" | "USER";
+
 // Interface cho JWT payload
-interface JwtPayload {
+export interface JwtPayload {
   sub: string; // email
   userId: string; // userId
+  role?: UserRole;
+  name?: string;
   iat: number; // thời điểm phát hành token
   exp: number; // thời điểm hết hạn token
 }
@@ -222,7 +226,7 @@ export const login = async (
  * Lấy thông tin người dùng từ token
  * @returns Thông tin từ payload của token hoặc null nếu không có token hợp lệ
  */
-export const getUserInfo = (): Partial<JwtPayload> | null => {
+export const getUserInfo = (): JwtPayload | null => {
   try {
     const accessToken = getCookie("accessToken") as string | undefined;
     if (!accessToken) return null;

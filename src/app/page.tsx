@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { isTokenValid } from "@/lib/auth";
+import { getUserInfo, isTokenValid, type UserRole } from "@/lib/auth";
 
 export default function HomePage() {
   const router = useRouter();
@@ -12,13 +12,20 @@ export default function HomePage() {
       try {
         const valid = await isTokenValid();
         if (valid) {
-          router.push("/main/dashboard");
+          const userInfo = getUserInfo();
+          const role = userInfo?.role as UserRole | undefined;
+          if (role === "ADMIN") {
+            router.push("/admin/dashboard");
+          } else if (role === "USER") {
+            router.push("/user/courses");
+          } else {
+            router.push("/login");
+          }
         } else {
           router.push("/login");
         }
       } catch (error) {
-        // Nếu có lỗi, redirect đến login
-        router.push("/public/dashboard");
+        router.push("/login");
       }
     };
 

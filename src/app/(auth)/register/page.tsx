@@ -44,7 +44,7 @@ export default function RegisterPage() {
       if (success) {
         showToast.dismiss(loadingToast);
         showToast.success("Đăng ký thành công!");
-        router.push("/main/dashboard");
+        router.push("/admin/dashboard");
       } else {
         showToast.dismiss(loadingToast);
         showToast.error("Đăng ký thất bại. Email có thể đã được sử dụng.");

@@ -82,7 +82,7 @@ const Sidebar: React.FC = () => {
         } mb-6 ${isShowSidebar ? "px-3" : "px-6"} py-4 border-b`}
         style={{ borderColor: token.colorBorderSecondary }}
       >
-        <Link href="/main/dashboard" className="flex items-center gap-3">
+        <Link href="/admin/dashboard" className="flex items-center gap-3">
           <div
             className="p-2 rounded-lg"
             style={{ backgroundColor: token.colorPrimary }}

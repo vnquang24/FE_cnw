@@ -25,7 +25,7 @@ import {
   Clock,
   MapPin,
 } from "lucide-react";
-import { useUsersControllerFindAll } from "../../../../generated/api/cnwComponents";
+import { useUsersControllerFindAll } from "@/generated/api/cnwComponents";
 
 const { Title, Text, Paragraph } = Typography;
 

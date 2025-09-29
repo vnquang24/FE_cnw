@@ -20,26 +20,26 @@ export const menuItems: MenuItem[] = [
   {
     icon: LayoutDashboard,
     label: "Dashboard",
-    pathname: "/main/dashboard",
+    pathname: "/admin/dashboard",
   },
   {
     icon: BookOpen,
     label: "Quản lý khóa học",
-    pathname: "/main/courses",
+    pathname: "/admin/courses",
     subMenu: [
       {
         label: "Danh sách khóa học",
-        pathname: "/main/courses",
+        pathname: "/admin/courses",
         icon: CircleDot,
       },
       {
         label: "Bài giảng",
-        pathname: "/main/lessons",
+        pathname: "/admin/lessons",
         icon: CircleDot,
       },
       {
         label: "Từ vựng",
-        pathname: "/main/words",
+        pathname: "/admin/words",
         icon: CircleDot,
       },
     ],
@@ -51,17 +51,17 @@ export const menuItems: MenuItem[] = [
     subMenu: [
       {
         label: "Danh sách bài kiểm tra",
-        pathname: "/main/tests",
+        pathname: "/admin/tests",
         icon: CircleDot,
       },
       {
         label: "Câu hỏi",
-        pathname: "/main/questions",
+        pathname: "/admin/questions",
         icon: CircleDot,
       },
       {
         label: "Kết quả kiểm tra",
-        pathname: "/main/test-results",
+        pathname: "/admin/test-results",
         icon: CircleDot,
       },
     ],
@@ -73,17 +73,17 @@ export const menuItems: MenuItem[] = [
     subMenu: [
       {
         label: "Danh sách người dùng",
-        pathname: "/main/users",
+        pathname: "/admin/admins",
         icon: CircleDot,
       },
       {
         label: "Nhóm người dùng",
-        pathname: "/main/user-groups",
+        pathname: "/admin/admin-groups",
         icon: CircleDot,
       },
       {
         label: "Phân quyền",
-        pathname: "/main/permissions",
+        pathname: "/admin/permissions",
         icon: CircleDot,
       },
     ],
@@ -95,17 +95,17 @@ export const menuItems: MenuItem[] = [
     subMenu: [
       {
         label: "Tiến độ học tập",
-        pathname: "/main/reports/progress",
+        pathname: "/admin/reports/progress",
         icon: CircleDot,
       },
       {
         label: "Kết quả học tập",
-        pathname: "/main/reports/results",
+        pathname: "/admin/reports/results",
         icon: CircleDot,
       },
       {
         label: "Thống kê khóa học",
-        pathname: "/main/reports/courses",
+        pathname: "/admin/reports/courses",
         icon: CircleDot,
       },
     ],
@@ -113,7 +113,7 @@ export const menuItems: MenuItem[] = [
   {
     icon: FolderOpen,
     label: "Quản lý tệp",
-    pathname: "/main/minio",
+    pathname: "/admin/minio",
   },
   {
     icon: Monitor,
@@ -122,12 +122,12 @@ export const menuItems: MenuItem[] = [
     subMenu: [
       {
         label: "Demo Components",
-        pathname: "/main/demo",
+        pathname: "/admin/demo",
         icon: CircleDot,
       },
       {
         label: "API Examples",
-        pathname: "/main/example",
+        pathname: "/admin/example",
         icon: CircleDot,
       },
     ],
@@ -139,12 +139,12 @@ export const menuItems: MenuItem[] = [
     subMenu: [
       {
         label: "Cấu hình chung",
-        pathname: "/main/settings/general",
+        pathname: "/admin/settings/general",
         icon: CircleDot,
       },
       {
         label: "Cài đặt thiết bị",
-        pathname: "/main/settings/devices",
+        pathname: "/admin/settings/devices",
         icon: CircleDot,
       },
     ],

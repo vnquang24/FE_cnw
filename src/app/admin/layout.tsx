@@ -41,11 +41,23 @@ export default function MainLayout({
 
         const info = getUserInfo();
         console.log("🔍 User info từ token:", info); // Debug log
+
+        if (!info) {
+          router.push("/login");
+          return;
+        }
+
+        if (info.role !== "ADMIN") {
+          const fallback = info?.role === "USER" ? "/user/courses" : "/login";
+          router.push(fallback);
+          return;
+        }
+
         setUserInfo({
-          id: info?.userId || "",
-          name: info?.sub || "Người dùng",
-          email: info?.sub || "",
-          role: "user",
+          id: info.userId || "",
+          name: info.sub || "Người dùng",
+          email: info.sub || "",
+          role: info.role,
           avatar: undefined,
         });
         console.log("🔍 Đã set user info thành công"); // Debug log

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -28,6 +28,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useFindManyCourse } from "../../../generated/hooks/course";
+import { useFindManyUser } from "../../../generated/hooks/user";
+import { useFindManyUserCourse } from "../../../generated/hooks/user-course";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -132,29 +134,55 @@ const HeroSection = () => {
 
 // Stats Section Component
 const StatsSection = () => {
-  const stats = [
-    {
-      icon: <BookOpen className="text-blue-600" size={32} />,
-      number: "500+",
-      label: "Khóa học",
+  // Fetch real data
+  const { data: courses } = useFindManyCourse({
+    include: {
+      userCourses: true,
     },
-    {
-      icon: <Users className="text-green-600" size={32} />,
-      number: "10,000+",
-      label: "Học viên",
+  });
+  const { data: users } = useFindManyUser({});
+  const { data: userCourses } = useFindManyUserCourse({
+    where: {
+      enrolmentStatus: "COMPLETED",
     },
-    {
-      icon: <Award className="text-purple-600" size={32} />,
-      number: "95%",
-      label: "Tỷ lệ hoàn thành",
-    },
-    {
-      icon: <Star className="text-yellow-600" size={32} />,
-      number: "4.8/5",
-      label: "Đánh giá",
-    },
-  ];
+  });
 
+  // Calculate real stats
+  const stats = useMemo(() => {
+    const totalCourses = courses?.length || 0;
+    const totalUsers = users?.length || 0;
+    const completedEnrollments = userCourses?.length || 0;
+    const totalEnrollments =
+      courses?.reduce(
+        (acc, course) => acc + (course.userCourses?.length || 0),
+        0,
+      ) || 1;
+    const completionRate =
+      Math.round((completedEnrollments / totalEnrollments) * 100) || 0;
+
+    return [
+      {
+        icon: <BookOpen className="text-blue-600" size={32} />,
+        number: `${totalCourses}+`,
+        label: "Khóa học",
+      },
+      {
+        icon: <Users className="text-green-600" size={32} />,
+        number: `${totalUsers.toLocaleString()}+`,
+        label: "Học viên",
+      },
+      {
+        icon: <Award className="text-purple-600" size={32} />,
+        number: `${completionRate}%`,
+        label: "Tỷ lệ hoàn thành",
+      },
+      {
+        icon: <Star className="text-yellow-600" size={32} />,
+        number: "4.8/5",
+        label: "Đánh giá trung bình",
+      },
+    ];
+  }, [courses, users, userCourses]);
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">

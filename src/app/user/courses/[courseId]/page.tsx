@@ -1,0 +1,279 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import {
+  Alert,
+  Avatar,
+  Button,
+  Card,
+  Col,
+  Empty,
+  List,
+  Progress,
+  Row,
+  Space,
+  Spin,
+  Statistic,
+  Tag,
+  Typography,
+} from "antd";
+import {
+  BookOpen,
+  ChevronLeft,
+  Compass,
+  Layers,
+  UserRound,
+} from "lucide-react";
+import {
+  useFindUniqueCourse,
+  useFindManyUserLesson,
+  useFindManyUserCourse,
+} from "@/generated/hooks";
+import { getUserId } from "@/lib/auth";
+
+const { Title, Text, Paragraph } = Typography;
+
+const lessonStatusConfig: Record<string, { label: string; color: string }> = {
+  TODO: { label: "Chưa học", color: "default" },
+  DOING: { label: "Đang học", color: "blue" },
+  PASS: { label: "Hoàn thành", color: "green" },
+  FAIL: { label: "Cần ôn lại", color: "volcano" },
+};
+
+export default function CourseDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const courseId = params?.courseId as string | undefined;
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserId(getUserId());
+  }, []);
+
+  const courseQueryArgs = useMemo(
+    () => ({
+      where: { id: courseId ?? "" },
+      include: {
+        creator: true,
+        lessons: {
+          include: {
+            components: true,
+          },
+          orderBy: { position: "asc" as const },
+        },
+      },
+    }),
+    [courseId],
+  );
+
+  const {
+    data: course,
+    isLoading: courseLoading,
+    isFetching: courseFetching,
+    error: courseError,
+  } = useFindUniqueCourse(courseQueryArgs, {
+    enabled: Boolean(courseId),
+  });
+
+  const userLessonsArgs = useMemo(
+    () => ({
+      where: {
+        userId: userId ?? "",
+        lesson: {
+          courseId: courseId ?? "",
+        },
+      },
+    }),
+    [userId, courseId],
+  );
+
+  const { data: userLessons } = useFindManyUserLesson(userLessonsArgs, {
+    enabled: Boolean(userId && courseId),
+  });
+
+  const enrolmentArgs = useMemo(
+    () => ({
+      where: {
+        userId: userId ?? "",
+        courseId: courseId ?? "",
+      },
+      take: 1,
+    }),
+    [userId, courseId],
+  );
+
+  const { data: enrolment } = useFindManyUserCourse(enrolmentArgs, {
+    enabled: Boolean(userId && courseId),
+  });
+
+  const lessonStatusMap = useMemo(() => {
+    const map = new Map<string, string>();
+    (userLessons ?? []).forEach((entry) => {
+      map.set(entry.lessonId, entry.status);
+    });
+    return map;
+  }, [userLessons]);
+
+  if (!courseId || courseLoading || courseFetching) {
+    return (
+      <div className="flex justify-center items-center h-72">
+        <Spin size="large" tip="Đang tải thông tin khóa học..." />
+      </div>
+    );
+  }
+
+  if (courseError) {
+    return (
+      <Alert
+        type="error"
+        showIcon
+        message="Không thể tải khóa học"
+        description="Vui lòng thử lại sau hoặc liên hệ hỗ trợ."
+      />
+    );
+  }
+
+  if (!course) {
+    return <Empty description="Không tìm thấy khóa học." />;
+  }
+
+  const enrolmentInfo = enrolment?.[0];
+  const progressValue = Math.min(enrolmentInfo?.progress ?? 0, 100);
+
+  return (
+    <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <Button
+        icon={<ChevronLeft size={16} />}
+        onClick={() => router.back()}
+        style={{ width: "fit-content" }}
+      >
+        Quay lại
+      </Button>
+
+      <Card>
+        <Row gutter={[24, 24]} align="middle">
+          <Col xs={24} md={18}>
+            <Space direction="vertical" size={12} style={{ width: "100%" }}>
+              <Space size={12}>
+                <Avatar
+                  shape="square"
+                  size={64}
+                  style={{ backgroundColor: "#1677ff20" }}
+                >
+                  <BookOpen size={28} className="text-blue-600" />
+                </Avatar>
+                <div>
+                  <Title level={3} style={{ margin: 0 }}>
+                    {course.title}
+                  </Title>
+                  <Text type="secondary">
+                    Thời lượng: {course.duration} phút ·{" "}
+                    {course.lessons?.length || 0} bài học
+                  </Text>
+                </div>
+              </Space>
+              {course.description && (
+                <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                  {course.description}
+                </Paragraph>
+              )}
+              <Space size={8} align="center">
+                <UserRound size={16} className="text-gray-500" />
+                <Text type="secondary">
+                  Giảng viên: {course.creator?.name || "Chưa cập nhật"}
+                </Text>
+              </Space>
+            </Space>
+          </Col>
+          <Col xs={24} md={6}>
+            <Card bordered={false} className="bg-gray-50">
+              <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                <Statistic
+                  title="Tiến độ khóa học"
+                  value={progressValue}
+                  suffix="%"
+                />
+                <Progress
+                  percent={progressValue}
+                  status={progressValue === 100 ? "success" : undefined}
+                />
+                {enrolmentInfo?.enrolmentStatus && (
+                  <Tag color="geekblue" style={{ width: "fit-content" }}>
+                    {enrolmentInfo.enrolmentStatus}
+                  </Tag>
+                )}
+              </Space>
+            </Card>
+          </Col>
+        </Row>
+      </Card>
+
+      <Card
+        title="Danh sách bài học"
+        extra={`${course.lessons?.length || 0} bài`}
+      >
+        {course.lessons?.length ? (
+          <List
+            itemLayout="vertical"
+            dataSource={course.lessons}
+            renderItem={(lesson, index) => {
+              const statusKey = lessonStatusMap.get(lesson.id) ?? "TODO";
+              const status =
+                lessonStatusConfig[statusKey] ?? lessonStatusConfig.TODO;
+              const componentCount = lesson.components?.length ?? 0;
+
+              return (
+                <List.Item
+                  key={lesson.id}
+                  actions={[
+                    <Link
+                      key="learn"
+                      href={`/user/courses/${course.id}/lessons/${lesson.id}`}
+                    >
+                      <Button type="primary">Bắt đầu học</Button>
+                    </Link>,
+                  ]}
+                >
+                  <List.Item.Meta
+                    avatar={
+                      <Tag color="blue">Bài {lesson.position ?? index + 1}</Tag>
+                    }
+                    title={
+                      <Space size={8} wrap>
+                        <Text strong>{lesson.title}</Text>
+                        <Tag color={status.color}>{status.label}</Tag>
+                      </Space>
+                    }
+                    description={
+                      <Space size={16} wrap>
+                        <Space size={6}>
+                          <Layers size={16} className="text-gray-500" />
+                          <Text type="secondary">
+                            {componentCount} nội dung
+                          </Text>
+                        </Space>
+                        <Space size={6}>
+                          <Compass size={16} className="text-gray-500" />
+                          <Text type="secondary">
+                            Cập nhật{" "}
+                            {new Date(lesson.updatedAt).toLocaleDateString(
+                              "vi-VN",
+                            )}
+                          </Text>
+                        </Space>
+                      </Space>
+                    }
+                  />
+                </List.Item>
+              );
+            }}
+          />
+        ) : (
+          <Empty description="Khóa học chưa có bài học." />
+        )}
+      </Card>
+    </Space>
+  );
+}
