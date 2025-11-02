@@ -46,6 +46,17 @@ enum Gender {
   OTHER
 }
 
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum EnrolmentStatus {
   PENDING
   APPROVED
@@ -110,6 +121,8 @@ model Course {
   title               String               @db.VarChar(255)
   createdBy           String?
   duration            Int
+  level               CourseLevel          @default(BEGINNER)
+  status              CourseStatus         @default(ACTIVE)
   creator             User?                @relation("CourseCreator", fields: [createdBy], references: [id])
   lessons             Lesson[]
   userCourses         UserCourse[]

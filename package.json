@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--max-old-space-size=8192' next dev --turbopack",
+    "dev-window": "cross-env NODE_OPTIONS='--max-old-space-size=8192' next dev --turbopack",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' next build --turbopack",
     "start": "next start",
     "lint": "biome check",
@@ -65,6 +66,7 @@
     "@zenstackhq/openapi": "^2.19.0",
     "@zenstackhq/trpc": "^2.19.0",
     "axios": "^1.8.4",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
     "husky": "^9.1.7",
