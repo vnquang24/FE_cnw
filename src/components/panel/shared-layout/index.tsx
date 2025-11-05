@@ -172,7 +172,7 @@ export default function SharedLayout({
   }
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout className="h-screen overflow-hidden">
       <Sider
         width={isShowSidebar ? 64 : 256}
         collapsed={isShowSidebar}
@@ -255,26 +255,33 @@ export default function SharedLayout({
           </div>
         )}
 
-        {/* Toggle Button */}
-        <Button
-          type="text"
-          icon={
-            isShowSidebar ? (
-              <ChevronRight size={20} />
-            ) : (
-              <ChevronLeft size={20} />
-            )
-          }
-          onClick={handleToggleSidebar}
-          className="absolute -right-5 top-1/2 transform -translate-y-1/2 rounded-full shadow-lg hover:shadow-xl z-20 w-10 h-10 flex items-center justify-center"
+        {/* Toggle Button - Fixed position */}
+        <div
+          className="fixed top-1/2 -translate-y-1/2 z-50 transition-all duration-300"
           style={{
-            backgroundColor: token.colorBgContainer,
-            border: `2px solid ${token.colorBorderSecondary}`,
-            color: token.colorTextSecondary,
+            left: isShowSidebar ? "54px" : "246px",
           }}
-        />
+        >
+          <Button
+            type="text"
+            icon={
+              isShowSidebar ? (
+                <ChevronRight size={16} />
+              ) : (
+                <ChevronLeft size={16} />
+              )
+            }
+            onClick={handleToggleSidebar}
+            className="rounded-full shadow-md hover:shadow-lg w-8 h-8 flex items-center justify-center p-0"
+            style={{
+              backgroundColor: token.colorBgContainer,
+              border: `1px solid ${token.colorBorderSecondary}`,
+              color: token.colorTextSecondary,
+            }}
+          />
+        </div>
       </Sider>
-      <Layout>
+      <Layout className="flex flex-col h-screen">
         <Header
           user={{
             id: userInfo.userId || "",
@@ -285,10 +292,8 @@ export default function SharedLayout({
           }}
           pathName={title}
         />
-        <Content style={{ margin: "24px", minHeight: 360 }}>
-          <div className="bg-white p-6 rounded-lg shadow-sm min-h-[70vh]">
-            {children}
-          </div>
+        <Content className="flex-1 overflow-y-auto bg-gray-50 p-3">
+          {children}
         </Content>
       </Layout>
     </Layout>

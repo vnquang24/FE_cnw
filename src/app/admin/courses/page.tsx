@@ -34,7 +34,7 @@ import {
 } from "@/generated/hooks";
 import {
   CourseFormDialog,
-  CourseFormData,
+  type CourseFormData,
 } from "@/components/admin/courses/CourseFormDialog";
 import { showToast } from "@/lib/toast";
 import { getUserId } from "@/lib/auth";

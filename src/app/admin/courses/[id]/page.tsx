@@ -1,17 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Typography, Tag, Spin, Alert } from "antd";
-import { ChevronLeft, Calendar, Clock, Users, BookOpen } from "lucide-react";
+import { Button, Tag, Spin, Alert } from "antd";
+import {
+  ChevronLeft,
+  Calendar,
+  Clock,
+  Users,
+  BookOpen,
+  Settings,
+} from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { useFindUniqueCourse } from "@/generated/hooks";
+import { useLessonModal } from "@/components/modal/LessonModalContext";
 
-const { Title, Text } = Typography;
+interface LessonData {
+  id: string;
+  title: string;
+  position: number;
+}
 
 export default function CourseDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
+
+  const { openViewModal, openEditModal } = useLessonModal();
 
   const {
     data: course,
@@ -158,13 +172,26 @@ export default function CourseDetailPage() {
                 <h3 className="text-lg font-semibold text-gray-900">
                   Danh sách bài học ({course.lessons?.length || 0})
                 </h3>
-                <Button className="bg-blue-600 hover:bg-blue-700" size="middle">
-                  + Thêm bài học
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Link href={`/admin/courses/${id}/lessons`}>
+                    <Button
+                      className="bg-green-600 hover:bg-green-700"
+                      size="middle"
+                    >
+                      Quản lý bài học
+                    </Button>
+                  </Link>
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700"
+                    size="middle"
+                  >
+                    + Thêm bài học
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-2">
-                {course.lessons?.map((lesson: any, index: number) => (
+                {course.lessons?.map((lesson: LessonData, index: number) => (
                   <div
                     key={lesson.id}
                     className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
@@ -178,10 +205,26 @@ export default function CourseDetailPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Link
+                        href={`/admin/courses/${id}/lessons/${lesson.id}`}
+                        className="inline-block"
+                      >
+                        <Button
+                          type="default"
+                          size="small"
+                          icon={<Settings className="w-4 h-4" />}
+                          className="text-purple-600 hover:text-purple-700 border-purple-200 hover:border-purple-300"
+                        >
+                          Chi tiết
+                        </Button>
+                      </Link>
                       <Button
                         type="default"
                         size="small"
                         className="text-blue-600 hover:text-blue-700"
+                        onClick={() => {
+                          openViewModal(lesson.id);
+                        }}
                       >
                         Xem
                       </Button>
@@ -189,6 +232,9 @@ export default function CourseDetailPage() {
                         type="default"
                         size="small"
                         className="text-gray-600 hover:text-gray-700"
+                        onClick={() => {
+                          openEditModal(lesson.id);
+                        }}
                       >
                         Sửa
                       </Button>
@@ -252,7 +298,7 @@ export default function CourseDetailPage() {
               </h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                     <Calendar className="w-4 h-4 text-gray-600" />
                   </div>
                   <div>
@@ -268,7 +314,7 @@ export default function CourseDetailPage() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                     <Calendar className="w-4 h-4 text-gray-600" />
                   </div>
                   <div>
