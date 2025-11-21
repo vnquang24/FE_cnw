@@ -3,9 +3,10 @@
  ******************************************************************************/
 
 /* eslint-disable */
-// @ts-nocheck
 
-const metadata = {
+import type { ModelMeta } from "@zenstackhq/runtime";
+
+const metadata: ModelMeta = {
   models: {
     course: {
       name: "Course",
@@ -293,6 +294,27 @@ const metadata = {
           name: "maxAttempts",
           type: "Int",
         },
+        maxScore: {
+          name: "maxScore",
+          type: "Int",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: 10 }] },
+          ],
+        },
+        shuffleQuestions: {
+          name: "shuffleQuestions",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
+        shuffleAnswers: {
+          name: "shuffleAnswers",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
         questions: {
           name: "questions",
           type: "Question",
@@ -359,6 +381,19 @@ const metadata = {
         questionType: {
           name: "questionType",
           type: "QuestionType",
+        },
+        points: {
+          name: "points",
+          type: "Int",
+          isOptional: true,
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: 1 }] },
+          ],
+        },
+        maxLength: {
+          name: "maxLength",
+          type: "Int",
+          isOptional: true,
         },
         test: {
           name: "test",
@@ -913,6 +948,11 @@ const metadata = {
           name: "userAnswers",
           type: "Json",
         },
+        questionScores: {
+          name: "questionScores",
+          type: "Json",
+          isOptional: true,
+        },
         mark: {
           name: "mark",
           type: "Int",
@@ -920,6 +960,23 @@ const metadata = {
         status: {
           name: "status",
           type: "TestResultStatus",
+        },
+        feedback: {
+          name: "feedback",
+          type: "String",
+          isOptional: true,
+        },
+        gradedBy: {
+          name: "gradedBy",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "grader",
+        },
+        gradedAt: {
+          name: "gradedAt",
+          type: "DateTime",
+          isOptional: true,
         },
         user: {
           name: "user",
@@ -936,6 +993,15 @@ const metadata = {
           backLink: "testResults",
           isRelationOwner: true,
           foreignKeyMapping: { id: "componentId" },
+        },
+        grader: {
+          name: "grader",
+          type: "User",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "gradedResults",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "gradedBy" },
         },
       },
       uniqueConstraints: {
@@ -1084,6 +1150,13 @@ const metadata = {
           isDataModel: true,
           isArray: true,
           backLink: "user",
+        },
+        gradedResults: {
+          name: "gradedResults",
+          type: "TestResult",
+          isDataModel: true,
+          isArray: true,
+          backLink: "grader",
         },
         adminCourseManagers: {
           name: "adminCourseManagers",

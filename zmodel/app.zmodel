@@ -45,9 +45,12 @@ model Word extends Base {
 
 // Test model
 model Test extends Base {
-  name        String @db.Text
-  duration    Int
-  maxAttempts Int
+  name               String  @db.Text
+  duration           Int
+  maxAttempts        Int
+  maxScore           Int     @default(10)
+  shuffleQuestions   Boolean @default(false)
+  shuffleAnswers     Boolean @default(false)
 
   // Relations
   questions  Question[]
@@ -59,6 +62,8 @@ model Question extends Base {
   testId       String
   content      String       @db.Text
   questionType QuestionType
+  points       Int?         @default(1)
+  maxLength    Int?
 
   // Relations
   test    Test     @relation(fields: [testId], references: [id])
@@ -94,14 +99,13 @@ model Component extends Base {
 
 // UserCourse model
 model UserCourse extends Base {
-  userId            String
-  courseId          String
-  enrolmentStatus   EnrolmentStatus @default(PENDING)
-  progress          Int
-  reason            String?         @db.Text
-  startDate         DateTime?       @db.Date
-  endDate           DateTime?       @db.Date
-  extensionRequest  Boolean         @default(false)
+  userId           String
+  courseId         String
+  enrolmentStatus  EnrolmentStatus @default(PENDING)
+  progress         Int
+  reason           String?         @db.Text
+  startDate        DateTime?       @db.Date
+  endDate          DateTime?       @db.Date
 
   // Relations
   user   User   @relation(fields: [userId], references: [id])
@@ -143,14 +147,19 @@ model UserWord extends Base {
 
 // TestResult model
 model TestResult extends Base {
-  userId        String
-  componentId   String
-  attemptNumber Int
-  userAnswers   Json
-  mark          Int
-  status        TestResultStatus
+  userId         String
+  componentId    String
+  attemptNumber  Int
+  userAnswers    Json
+  questionScores Json?  // Store individual question scores: { questionId: { score: number, maxScore: number, feedback: string } }
+  mark           Int
+  status         TestResultStatus
+  feedback       String?   @db.Text
+  gradedBy       String?
+  gradedAt       DateTime?
 
   // Relations
   user      User      @relation(fields: [userId], references: [id])
   component Component @relation(fields: [componentId], references: [id])
+  grader    User?     @relation("GradedBy", fields: [gradedBy], references: [id])
 }

@@ -171,8 +171,10 @@ export default function LessonLearningPage() {
     componentFetching
   ) {
     return (
-      <div className="flex justify-center items-center h-72">
-        <Spin size="large" tip="Đang tải nội dung bài học..." />
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" tip="Đang tải nội dung bài học...">
+          <div style={{ minHeight: 50, minWidth: 100 }} />
+        </Spin>
       </div>
     );
   }

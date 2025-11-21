@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Modal,
   Button,
   Input,
+  InputNumber,
   Select,
   Radio,
   Checkbox,
@@ -15,6 +16,8 @@ import {
   Empty,
   Popconfirm,
   Divider,
+  Form,
+  Alert,
 } from "antd";
 import { Plus, Trash2, Edit, Save, X } from "lucide-react";
 import {
@@ -42,7 +45,9 @@ interface Answer {
 interface Question {
   id: string;
   content: string;
-  questionType: "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
+  questionType: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "ESSAY";
+  points?: number;
+  maxLength?: number;
   answers: Answer[];
   isNew?: boolean;
   isEditing?: boolean;
@@ -52,16 +57,22 @@ interface ManageQuestionsProps {
   open: boolean;
   testId: string;
   onCancel: () => void;
+  shuffleQuestions?: boolean;
+  shuffleAnswers?: boolean;
 }
 
 export default function ManageQuestions({
   open,
   testId,
   onCancel,
+  shuffleQuestions = false,
+  shuffleAnswers = false,
 }: ManageQuestionsProps) {
   const { message } = App.useApp();
+  const [form] = Form.useForm();
   const [editingQuestions, setEditingQuestions] = useState<Question[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
+  const isMountedRef = useRef(true);
 
   // Fetch questions
   const {
@@ -86,36 +97,64 @@ export default function ManageQuestions({
   const updateAnswer = useUpdateAnswer();
   const deleteAnswer = useDeleteAnswer();
 
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   // Reset state when modal closes
   useEffect(() => {
     if (!open) {
       setEditingQuestions([]);
       setHasChanges(false);
+      form.resetFields();
     }
-  }, [open]);
+  }, [open, form]);
 
   // Initialize editing questions when data is loaded
   useEffect(() => {
     if (questionsData && open) {
-      setEditingQuestions(
-        questionsData.map((q: any) => ({
-          id: q.id,
-          content: q.content,
-          questionType: q.questionType,
-          answers: q.answers || [],
-          isNew: false,
-          isEditing: false,
-        })),
-      );
+      const questions = questionsData.map((q: any) => ({
+        id: q.id,
+        content: q.content,
+        questionType: q.questionType,
+        points: q.points || 1,
+        maxLength: q.maxLength || 1000,
+        answers: q.answers || [],
+        isNew: false,
+        isEditing: false,
+      }));
+      setEditingQuestions(questions);
+
+      // Set form values
+      const formValues: any = {};
+      questions.forEach((q) => {
+        formValues[`question_${q.id}_content`] = q.content;
+        formValues[`question_${q.id}_type`] = q.questionType;
+        formValues[`question_${q.id}_points`] = q.points;
+        formValues[`question_${q.id}_maxLength`] = q.maxLength;
+
+        q.answers.forEach((a: Answer) => {
+          formValues[`answer_${a.id}_content`] = a.content;
+          formValues[`answer_${a.id}_correct`] = a.correct;
+        });
+      });
+      form.setFieldsValue(formValues);
     }
-  }, [questionsData, open]);
+  }, [questionsData, open, form]);
 
   // Add new question
   const addQuestion = () => {
+    const questionId = `new-${Date.now()}`;
     const newQuestion: Question = {
-      id: `new-${Date.now()}`,
+      id: questionId,
       content: "",
       questionType: "SINGLE_CHOICE",
+      points: 1,
+      maxLength: 1000,
       answers: [
         {
           id: `new-ans-${Date.now()}-1`,
@@ -133,6 +172,15 @@ export default function ManageQuestions({
       isNew: true,
       isEditing: true,
     };
+
+    // Set form values for new question
+    form.setFieldsValue({
+      [`question_${questionId}_content`]: "",
+      [`question_${questionId}_type`]: "SINGLE_CHOICE",
+      [`question_${questionId}_points`]: 1,
+      [`question_${questionId}_maxLength`]: 1000,
+    });
+
     setEditingQuestions([...editingQuestions, newQuestion]);
     setHasChanges(true);
   };
@@ -143,18 +191,26 @@ export default function ManageQuestions({
 
     if (question?.isNew) {
       // Just remove from local state
-      setEditingQuestions(editingQuestions.filter((q) => q.id !== questionId));
-      setHasChanges(true);
-    } else {
-      try {
-        await deleteQuestion.mutateAsync({ where: { id: questionId } });
-        message.success("Xóa câu hỏi thành công!");
-        refetch();
+      if (isMountedRef.current) {
         setEditingQuestions(
           editingQuestions.filter((q) => q.id !== questionId),
         );
+        setHasChanges(true);
+      }
+    } else {
+      try {
+        await deleteQuestion.mutateAsync({ where: { id: questionId } });
+        if (isMountedRef.current) {
+          message.success("Xóa câu hỏi thành công!");
+          refetch();
+          setEditingQuestions(
+            editingQuestions.filter((q) => q.id !== questionId),
+          );
+        }
       } catch (error) {
-        message.error("Có lỗi xảy ra khi xóa câu hỏi!");
+        if (isMountedRef.current) {
+          message.error("Có lỗi xảy ra khi xóa câu hỏi!");
+        }
       }
     }
   };
@@ -169,10 +225,29 @@ export default function ManageQuestions({
     setHasChanges(true);
   };
 
+  // Update question points
+  const updateQuestionPoints = (questionId: string, points: number) => {
+    form.setFieldValue(`question_${questionId}_points`, points);
+    setEditingQuestions(
+      editingQuestions.map((q) => (q.id === questionId ? { ...q, points } : q)),
+    );
+    setHasChanges(true);
+  };
+
+  // Update question max length
+  const updateQuestionMaxLength = (questionId: string, maxLength: number) => {
+    setEditingQuestions(
+      editingQuestions.map((q) =>
+        q.id === questionId ? { ...q, maxLength } : q,
+      ),
+    );
+    setHasChanges(true);
+  };
+
   // Update question type
   const updateQuestionType = (
     questionId: string,
-    questionType: "SINGLE_CHOICE" | "MULTIPLE_CHOICE",
+    questionType: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "ESSAY",
   ) => {
     setEditingQuestions(
       editingQuestions.map((q) =>
@@ -219,25 +294,16 @@ export default function ManageQuestions({
   const handleDeleteAnswer = async (questionId: string, answerId: string) => {
     const question = editingQuestions.find((q) => q.id === questionId);
     if (!question || question.answers.length <= 2) {
-      message.warning("Phải có ít nhất 2 đáp án!");
+      if (isMountedRef.current) {
+        message.warning("Phải có ít nhất 2 đáp án!");
+      }
       return;
     }
 
     const answer = question.answers.find((a) => a.id === answerId);
 
     if (answer?.isNew) {
-      setEditingQuestions(
-        editingQuestions.map((q) =>
-          q.id === questionId
-            ? { ...q, answers: q.answers.filter((a) => a.id !== answerId) }
-            : q,
-        ),
-      );
-    } else {
-      try {
-        await deleteAnswer.mutateAsync({ where: { id: answerId } });
-        message.success("Xóa đáp án thành công!");
-        refetch();
+      if (isMountedRef.current) {
         setEditingQuestions(
           editingQuestions.map((q) =>
             q.id === questionId
@@ -245,11 +311,29 @@ export default function ManageQuestions({
               : q,
           ),
         );
+        setHasChanges(true);
+      }
+    } else {
+      try {
+        await deleteAnswer.mutateAsync({ where: { id: answerId } });
+        if (isMountedRef.current) {
+          message.success("Xóa đáp án thành công!");
+          refetch();
+          setEditingQuestions(
+            editingQuestions.map((q) =>
+              q.id === questionId
+                ? { ...q, answers: q.answers.filter((a) => a.id !== answerId) }
+                : q,
+            ),
+          );
+          setHasChanges(true);
+        }
       } catch (error) {
-        message.error("Có lỗi xảy ra khi xóa đáp án!");
+        if (isMountedRef.current) {
+          message.error("Có lỗi xảy ra khi xóa đáp án!");
+        }
       }
     }
-    setHasChanges(true);
   };
 
   // Update answer content
@@ -321,23 +405,42 @@ export default function ManageQuestions({
     const question = editingQuestions.find((q) => q.id === questionId);
     if (!question) return;
 
+    // Get values from form
+    const formValues = form.getFieldsValue();
+    const questionContent =
+      formValues[`question_${questionId}_content`] || question.content;
+    const questionPoints =
+      formValues[`question_${questionId}_points`] || question.points || 1;
+    const questionMaxLength =
+      formValues[`question_${questionId}_maxLength`] ||
+      question.maxLength ||
+      1000;
+
     // Validate
-    if (!question.content.trim()) {
-      message.error("Vui lòng nhập nội dung câu hỏi!");
+    if (!questionContent.trim()) {
+      if (isMountedRef.current) {
+        message.error("Vui lòng nhập nội dung câu hỏi!");
+      }
       return;
     }
 
-    for (const answer of question.answers) {
-      if (!answer.content.trim()) {
-        message.error("Vui lòng nhập nội dung cho tất cả đáp án!");
+    if (question.questionType !== "ESSAY") {
+      for (const answer of question.answers) {
+        if (!answer.content.trim()) {
+          if (isMountedRef.current) {
+            message.error("Vui lòng nhập nội dung cho tất cả đáp án!");
+          }
+          return;
+        }
+      }
+
+      const hasCorrectAnswer = question.answers.some((a) => a.correct);
+      if (!hasCorrectAnswer) {
+        if (isMountedRef.current) {
+          message.error("Phải có ít nhất 1 đáp án đúng!");
+        }
         return;
       }
-    }
-
-    const hasCorrectAnswer = question.answers.some((a) => a.correct);
-    if (!hasCorrectAnswer) {
-      message.error("Phải có ít nhất 1 đáp án đúng!");
-      return;
     }
 
     try {
@@ -346,13 +449,15 @@ export default function ManageQuestions({
         const createdQuestion = await createQuestion.mutateAsync({
           data: {
             testId,
-            content: question.content,
+            content: questionContent,
             questionType: question.questionType,
+            points: questionPoints,
+            maxLength: questionMaxLength,
           },
         });
 
-        if (createdQuestion) {
-          // Create answers
+        if (createdQuestion && question.questionType !== "ESSAY") {
+          // Create answers only if not ESSAY
           for (const answer of question.answers) {
             await createAnswer.mutateAsync({
               data: {
@@ -363,46 +468,60 @@ export default function ManageQuestions({
             });
           }
         }
-        message.success("Tạo câu hỏi thành công!");
+
+        if (isMountedRef.current) {
+          message.success("Tạo câu hỏi thành công!");
+        }
       } else {
         // Update existing question
         await updateQuestion.mutateAsync({
           where: { id: questionId },
           data: {
-            content: question.content,
+            content: questionContent,
             questionType: question.questionType,
+            points: questionPoints,
+            maxLength: questionMaxLength,
           },
         });
 
-        // Update/create/delete answers
-        for (const answer of question.answers) {
-          if (answer.isNew) {
-            await createAnswer.mutateAsync({
-              data: {
-                questionId: questionId,
-                content: answer.content,
-                correct: answer.correct,
-              },
-            });
-          } else {
-            await updateAnswer.mutateAsync({
-              where: { id: answer.id },
-              data: {
-                content: answer.content,
-                correct: answer.correct,
-              },
-            });
+        // Update/create/delete answers only if not ESSAY
+        if (question.questionType !== "ESSAY") {
+          for (const answer of question.answers) {
+            if (answer.isNew) {
+              await createAnswer.mutateAsync({
+                data: {
+                  questionId: questionId,
+                  content: answer.content,
+                  correct: answer.correct,
+                },
+              });
+            } else {
+              await updateAnswer.mutateAsync({
+                where: { id: answer.id },
+                data: {
+                  content: answer.content,
+                  correct: answer.correct,
+                },
+              });
+            }
           }
         }
-        message.success("Cập nhật câu hỏi thành công!");
+
+        if (isMountedRef.current) {
+          message.success("Cập nhật câu hỏi thành công!");
+        }
       }
 
-      await refetch();
-      toggleEditMode(questionId);
-      setHasChanges(false);
+      if (isMountedRef.current) {
+        await refetch();
+        toggleEditMode(questionId);
+        setHasChanges(false);
+      }
     } catch (error) {
-      message.error("Có lỗi xảy ra!");
-      console.error(error);
+      if (isMountedRef.current) {
+        message.error("Có lỗi xảy ra!");
+        console.error(error);
+      }
     }
   };
 
@@ -420,7 +539,7 @@ export default function ManageQuestions({
       title="Quản lý câu hỏi"
       open={open}
       onCancel={onCancel}
-      width={920}
+      width={"80%"}
       footer={[
         <Button key="close" onClick={onCancel}>
           Đóng
@@ -436,273 +555,401 @@ export default function ManageQuestions({
       ]}
       style={{ top: 20 }}
     >
-      <Spin spinning={questionsLoading}>
-        <div style={{ maxHeight: "70vh", overflowY: "auto", paddingRight: 10 }}>
-          {editingQuestions.length === 0 ? (
-            <Empty
-              description="Chưa có câu hỏi nào"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            >
-              <Button
-                type="primary"
-                icon={<Plus className="w-4 h-4" />}
-                onClick={addQuestion}
+      <Form form={form}>
+        <Spin spinning={questionsLoading}>
+          <div
+            style={{ maxHeight: "70vh", overflowY: "auto", paddingRight: 10 }}
+          >
+            {(shuffleQuestions || shuffleAnswers) && (
+              <Alert
+                type="info"
+                showIcon
+                message="Cài đặt trộn đề"
+                description={
+                  <div>
+                    {shuffleQuestions && (
+                      <div>• Câu hỏi sẽ được trộn cho mỗi lần làm bài</div>
+                    )}
+                    {shuffleAnswers && (
+                      <div>• Đáp án sẽ được trộn cho mỗi câu hỏi</div>
+                    )}
+                  </div>
+                }
+                style={{ marginBottom: 16 }}
+              />
+            )}
+            {editingQuestions.length === 0 ? (
+              <Empty
+                description="Chưa có câu hỏi nào"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
               >
-                Thêm câu hỏi đầu tiên
-              </Button>
-            </Empty>
-          ) : (
-            <Space direction="vertical" style={{ width: "100%" }} size="large">
-              {editingQuestions.map((question, qIndex) => (
+                <Button
+                  type="primary"
+                  icon={<Plus className="w-4 h-4" />}
+                  onClick={addQuestion}
+                >
+                  Thêm câu hỏi đầu tiên
+                </Button>
+              </Empty>
+            ) : (
+              <Space
+                direction="vertical"
+                style={{ width: "100%" }}
+                size="large"
+              >
+                {/* Questions Summary */}
                 <Card
-                  key={question.id}
+                  size="small"
                   style={{
-                    borderRadius: 8,
-                    border: "1px solid #e5e7eb",
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "#f0f9ff",
+                    border: "1px solid #bae6fd",
                   }}
                 >
-                  {/* Question Header */}
-                  <Space
-                    direction="vertical"
-                    style={{ width: "100%", marginBottom: 16 }}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
                   >
-                    <div
-                      style={{ display: "flex", gap: 12, alignItems: "center" }}
-                    >
+                    <div>
+                      <span style={{ fontWeight: 600, color: "#0284c7" }}>
+                        Tổng quan bài kiểm tra
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 24 }}>
+                      <span>
+                        <strong>Số câu hỏi:</strong> {editingQuestions.length}
+                      </span>
+                      <span>
+                        <strong>Tổng điểm:</strong>{" "}
+                        {editingQuestions.reduce((sum, q) => {
+                          const formValues = form.getFieldsValue();
+                          const points =
+                            formValues[`question_${q.id}_points`] ||
+                            q.points ||
+                            1;
+                          return sum + points;
+                        }, 0)}
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+
+                {editingQuestions.map((question, qIndex) => (
+                  <Card
+                    key={question.id}
+                    style={{
+                      borderRadius: 8,
+                      border: "1px solid #e5e7eb",
+                      backgroundColor: "#ffffff",
+                    }}
+                  >
+                    {/* Question Header */}
+                    <div style={{ marginBottom: 16 }}>
                       <div
                         style={{
-                          backgroundColor: "#f3f4f6",
-                          color: "#1f2937",
-                          borderRadius: 8,
-                          width: 32,
-                          height: 32,
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: "600",
-                          fontSize: 14,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {qIndex + 1}
-                      </div>
-                      <Input
-                        placeholder={`Nhập nội dung câu hỏi ${qIndex + 1}`}
-                        value={question.content}
-                        onChange={(e) =>
-                          updateQuestionContent(question.id, e.target.value)
-                        }
-                        disabled={!question.isEditing && !question.isNew}
-                        style={{
-                          flex: 1,
-                        }}
-                      />
-                      {!question.isNew && !question.isEditing && (
-                        <Button
-                          icon={<Edit className="w-4 h-4" />}
-                          onClick={() => toggleEditMode(question.id)}
-                        >
-                          Sửa
-                        </Button>
-                      )}
-                      {(question.isEditing || question.isNew) && (
-                        <>
-                          <Button
-                            type="primary"
-                            icon={<Save className="w-4 h-4" />}
-                            onClick={() => saveQuestion(question.id)}
-                          >
-                            Lưu
-                          </Button>
-                          {!question.isNew && (
-                            <Button
-                              icon={<X className="w-4 h-4" />}
-                              onClick={() => toggleEditMode(question.id)}
-                            >
-                              Hủy
-                            </Button>
-                          )}
-                        </>
-                      )}
-                    </div>
-
-                    {/* Question Type Selector */}
-                    <div
-                      style={{ display: "flex", justifyContent: "flex-end" }}
-                    >
-                      <Select
-                        value={question.questionType}
-                        onChange={(value) =>
-                          updateQuestionType(question.id, value)
-                        }
-                        disabled={!question.isEditing && !question.isNew}
-                        style={{
-                          width: 200,
-                        }}
-                      >
-                        <Option value="SINGLE_CHOICE">
-                          Trắc nghiệm 1 đáp án
-                        </Option>
-                        <Option value="MULTIPLE_CHOICE">
-                          Trắc nghiệm nhiều đáp án
-                        </Option>
-                      </Select>
-                    </div>
-                  </Space>
-
-                  {/* Answers */}
-                  <Space
-                    direction="vertical"
-                    style={{ width: "100%", marginTop: 16 }}
-                    size="middle"
-                  >
-                    {question.answers.map((answer, aIndex) => (
-                      <div
-                        key={answer.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
                           gap: 12,
-                          backgroundColor: answer.correct
-                            ? "#f0fdf4"
-                            : "#f9fafb",
-                          padding: "12px 16px",
-                          borderRadius: 8,
-                          border: answer.correct
-                            ? "1px solid #86efac"
-                            : "1px solid #e5e7eb",
+                          alignItems: "stretch",
+                          marginBottom: 12,
                         }}
                       >
-                        <div
+                        <span
                           style={{
-                            backgroundColor: answer.correct
-                              ? "#22c55e"
-                              : "#d1d5db",
-                            color: "#ffffff",
-                            borderRadius: 6,
-                            minWidth: 24,
-                            height: 24,
+                            fontWeight: 600,
+                            fontSize: 14,
+                            color: "#1f2937",
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center",
-                            fontWeight: "600",
-                            fontSize: 12,
                           }}
                         >
-                          {String.fromCharCode(65 + aIndex)}
-                        </div>
-                        {question.questionType === "SINGLE_CHOICE" ? (
-                          <Radio
-                            checked={answer.correct}
-                            onChange={() =>
-                              toggleSingleAnswer(question.id, answer.id)
-                            }
-                            disabled={!question.isEditing && !question.isNew}
-                          />
-                        ) : (
-                          <Checkbox
-                            checked={answer.correct}
-                            onChange={() =>
-                              toggleMultipleAnswer(question.id, answer.id)
-                            }
-                            disabled={!question.isEditing && !question.isNew}
-                          />
-                        )}
+                          Câu {qIndex + 1}
+                        </span>
                         <Input
-                          placeholder={`Nhập nội dung đáp án ${String.fromCharCode(65 + aIndex)}`}
-                          value={answer.content}
+                          placeholder={`Nhập nội dung câu hỏi`}
+                          value={question.content}
                           onChange={(e) =>
-                            updateAnswerContent(
-                              question.id,
-                              answer.id,
-                              e.target.value,
-                            )
+                            updateQuestionContent(question.id, e.target.value)
                           }
                           disabled={!question.isEditing && !question.isNew}
                           style={{
-                            backgroundColor: "transparent",
-                            border: "none",
                             flex: 1,
                           }}
                         />
-                        {(question.isEditing || question.isNew) && (
-                          <Popconfirm
-                            title="Xóa đáp án này?"
-                            onConfirm={() =>
-                              handleDeleteAnswer(question.id, answer.id)
-                            }
-                            okText="Xóa"
-                            cancelText="Hủy"
-                          >
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            alignItems: "stretch",
+                          }}
+                        >
+                          {!question.isNew && !question.isEditing && (
                             <Button
-                              type="text"
-                              danger
-                              icon={<Trash2 className="w-4 h-4" />}
-                            />
-                          </Popconfirm>
-                        )}
+                              type="primary"
+                              size="large"
+                              icon={<Edit className="w-4 h-4" />}
+                              onClick={() => toggleEditMode(question.id)}
+                              style={{
+                                height: "auto",
+                                padding: "4px 12px",
+                              }}
+                            >
+                              Sửa
+                            </Button>
+                          )}
+                          {(question.isEditing || question.isNew) && (
+                            <>
+                              <Button
+                                type="primary"
+                                size="large"
+                                icon={<Save className="w-4 h-4" />}
+                                onClick={() => saveQuestion(question.id)}
+                                style={{
+                                  height: "auto",
+                                  padding: "4px 12px",
+                                }}
+                              >
+                                Lưu
+                              </Button>
+                              {!question.isNew && (
+                                <Button
+                                  size="large"
+                                  icon={<X className="w-4 h-4" />}
+                                  onClick={() => toggleEditMode(question.id)}
+                                  style={{
+                                    height: "auto",
+                                    padding: "4px 12px",
+                                  }}
+                                >
+                                  Hủy
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
-                    ))}
 
-                    {/* Add Answer Button */}
-                    {(question.isEditing || question.isNew) && (
-                      <Button
-                        type="dashed"
-                        onClick={() => addAnswer(question.id)}
-                        icon={<Plus className="w-4 h-4" />}
+                      {/* Question Settings - Points and Type on same row */}
+                      <div
                         style={{
-                          width: "100%",
+                          display: "flex",
+                          gap: 16,
+                          alignItems: "center",
                         }}
                       >
-                        Thêm đáp án mới
-                      </Button>
+                        <Form.Item
+                          label="Loại câu hỏi"
+                          name={`question_${question.id}_type`}
+                          style={{ marginBottom: 0, minWidth: 180 }}
+                        >
+                          <Select
+                            value={question.questionType}
+                            onChange={(value) =>
+                              updateQuestionType(question.id, value)
+                            }
+                            disabled={!question.isEditing && !question.isNew}
+                            size="small"
+                          >
+                            <Option value="SINGLE_CHOICE">
+                              Trắc nghiệm 1 đáp án
+                            </Option>
+                            <Option value="MULTIPLE_CHOICE">
+                              Trắc nghiệm nhiều đáp án
+                            </Option>
+                            <Option value="ESSAY">Tự luận</Option>
+                          </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                          label="Điểm"
+                          name={`question_${question.id}_points`}
+                          style={{ marginBottom: 0, minWidth: 120 }}
+                          initialValue={question.points || 1}
+                        >
+                          <InputNumber
+                            min={1}
+                            max={100}
+                            size="small"
+                            onChange={(value) =>
+                              updateQuestionPoints(question.id, value || 1)
+                            }
+                            disabled={!question.isEditing && !question.isNew}
+                          />
+                        </Form.Item>
+
+                        {/* Essay-specific settings */}
+                        {question.questionType === "ESSAY" && (
+                          <Form.Item
+                            label="Độ dài tối đa"
+                            name={`question_${question.id}_maxLength`}
+                            style={{ marginBottom: 0, flex: 1 }}
+                            initialValue={question.maxLength || 1000}
+                          >
+                            <InputNumber
+                              min={50}
+                              max={5000}
+                              step={50}
+                              size="small"
+                              onChange={(value) =>
+                                updateQuestionMaxLength(
+                                  question.id,
+                                  value || 1000,
+                                )
+                              }
+                              disabled={!question.isEditing && !question.isNew}
+                              placeholder="Ký tự"
+                            />
+                          </Form.Item>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Answers - Only for choice questions */}
+                    {question.questionType !== "ESSAY" && (
+                      <div style={{ marginTop: 16, marginBottom: 16 }}>
+                        {question.answers.map((answer, aIndex) => (
+                          <div
+                            key={answer.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                              padding: "8px 12px",
+                              borderBottom: "1px solid #f0f0f0",
+                              border: "1px solid #d9d9d9",
+                              borderRadius: 4,
+                              marginBottom: 8,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                minWidth: 24,
+                                textAlign: "center",
+                              }}
+                            >
+                              {String.fromCharCode(65 + aIndex)}
+                            </span>
+                            {question.questionType === "SINGLE_CHOICE" ? (
+                              <Radio
+                                checked={answer.correct}
+                                onChange={() =>
+                                  toggleSingleAnswer(question.id, answer.id)
+                                }
+                                disabled={
+                                  !question.isEditing && !question.isNew
+                                }
+                              />
+                            ) : (
+                              <Checkbox
+                                checked={answer.correct}
+                                onChange={() =>
+                                  toggleMultipleAnswer(question.id, answer.id)
+                                }
+                                disabled={
+                                  !question.isEditing && !question.isNew
+                                }
+                              />
+                            )}
+                            <Input
+                              placeholder={`Đáp án ${String.fromCharCode(65 + aIndex)}`}
+                              value={answer.content}
+                              onChange={(e) =>
+                                updateAnswerContent(
+                                  question.id,
+                                  answer.id,
+                                  e.target.value,
+                                )
+                              }
+                              disabled={!question.isEditing && !question.isNew}
+                              size="small"
+                              style={{
+                                backgroundColor: "transparent",
+                                border: "none",
+                                flex: 1,
+                              }}
+                            />
+                            {(question.isEditing || question.isNew) && (
+                              <Popconfirm
+                                title="Xóa đáp án này?"
+                                onConfirm={() =>
+                                  handleDeleteAnswer(question.id, answer.id)
+                                }
+                                okText="Xóa"
+                                cancelText="Hủy"
+                              >
+                                <Button
+                                  type="text"
+                                  danger
+                                  size="small"
+                                  icon={<Trash2 className="w-4 h-4" />}
+                                />
+                              </Popconfirm>
+                            )}
+                          </div>
+                        ))}
+
+                        {/* Add Answer Button */}
+                        {(question.isEditing || question.isNew) && (
+                          <Button
+                            type="dashed"
+                            size="small"
+                            onClick={() => addAnswer(question.id)}
+                            icon={<Plus className="w-4 h-4" />}
+                            style={{
+                              width: "100%",
+                              marginTop: 8,
+                            }}
+                          >
+                            Thêm đáp án
+                          </Button>
+                        )}
+                      </div>
                     )}
-                  </Space>
 
-                  {/* Delete Question Button */}
-                  <div
-                    style={{
-                      marginTop: 16,
-                      paddingTop: 16,
-                      borderTop: "1px solid #e5e7eb",
-                      display: "flex",
-                      justifyContent: "flex-end",
-                    }}
-                  >
-                    <Popconfirm
-                      title="Xóa câu hỏi này?"
-                      description="Hành động này không thể hoàn tác!"
-                      onConfirm={() => handleDeleteQuestion(question.id)}
-                      okText="Xóa"
-                      cancelText="Hủy"
-                      okButtonProps={{ danger: true }}
-                    >
-                      <Button danger icon={<Trash2 className="w-4 h-4" />}>
-                        Xóa câu hỏi
-                      </Button>
-                    </Popconfirm>
-                  </div>
-                </Card>
-              ))}
-            </Space>
-          )}
+                    {/* Delete Question Button */}
+                    {(question.isEditing || question.isNew) && (
+                      <div style={{ marginTop: 12 }}>
+                        <Popconfirm
+                          title="Xóa câu hỏi này?"
+                          description="Hành động này không thể hoàn tác!"
+                          onConfirm={() => handleDeleteQuestion(question.id)}
+                          okText="Xóa"
+                          cancelText="Hủy"
+                          okButtonProps={{ danger: true }}
+                        >
+                          <Button
+                            danger
+                            size="small"
+                            icon={<Trash2 className="w-4 h-4" />}
+                          >
+                            Xóa câu hỏi
+                          </Button>
+                        </Popconfirm>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </Space>
+            )}
 
-          {editingQuestions.length > 0 && (
-            <>
-              <Divider />
-              <Button
-                type="primary"
-                icon={<Plus className="w-4 h-4" />}
-                onClick={addQuestion}
-                block
-              >
-                Thêm câu hỏi mới
-              </Button>
-            </>
-          )}
-        </div>
-      </Spin>
+            {editingQuestions.length > 0 && (
+              <>
+                <Divider />
+                <Button
+                  type="primary"
+                  icon={<Plus className="w-4 h-4" />}
+                  onClick={addQuestion}
+                  block
+                >
+                  Thêm câu hỏi mới
+                </Button>
+              </>
+            )}
+          </div>
+        </Spin>
+      </Form>
     </Modal>
   );
 }

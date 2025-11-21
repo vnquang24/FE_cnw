@@ -27,6 +27,7 @@ model User extends Base {
   userLessons     UserLesson[]
   userWords       UserWord[]
   testResults     TestResult[]
+  gradedResults   TestResult[]   @relation("GradedBy")
   adminCourseManagers AdminCourseManager[]
   
   // Created content

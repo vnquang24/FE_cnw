@@ -42,7 +42,6 @@ enum Gender {
   OTHER
 }
 
-
 // Add by Nguyen Anh Quan
 enum CourseLevel {
   BEGINNER 
@@ -85,6 +84,7 @@ enum WordType {
 enum QuestionType {
   SINGLE_CHOICE
   MULTIPLE_CHOICE
+  ESSAY
 }
 
 enum ComponentType {
@@ -94,6 +94,7 @@ enum ComponentType {
 }
 
 enum TestResultStatus {
+  PENDING
   PASSED
   FAILED
 }

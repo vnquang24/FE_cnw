@@ -6,6 +6,7 @@ import {
   Alert,
   Button,
   Card,
+  Input,
   Checkbox,
   Col,
   Empty,
@@ -34,6 +35,7 @@ import {
   useCreateTestResult,
 } from "@/generated/hooks";
 import { getUserId } from "@/lib/auth";
+import { shuffleTestContent } from "@/utils/shuffleUtils";
 
 const { Title, Text, Paragraph } = Typography;
 const { Countdown } = Statistic;
@@ -41,6 +43,7 @@ const { Countdown } = Statistic;
 interface UserAnswer {
   questionId: string;
   selectedAnswerIds: string[];
+  essayAnswer?: string;
 }
 
 export default function TakeTestPage() {
@@ -55,6 +58,7 @@ export default function TakeTestPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
+  const [displayQuestions, setDisplayQuestions] = useState<any[]>([]);
   const [timeLeft, setTimeLeft] = useState<number>(0); // in seconds
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
@@ -62,6 +66,13 @@ export default function TakeTestPage() {
 
   useEffect(() => {
     setUserId(getUserId());
+  }, []);
+
+  // Reset displayQuestions on unmount to ensure fresh shuffle on next mount
+  useEffect(() => {
+    return () => {
+      setDisplayQuestions([]);
+    };
   }, []);
 
   // Fetch test data with questions and answers
@@ -118,7 +129,6 @@ export default function TakeTestPage() {
     if (timeLeft <= 0) {
       if (!isTimeUp && timeLeft === 0) {
         setIsTimeUp(true);
-        message.warning("Hết giờ! Bài làm sẽ được tự động nộp.");
         handleSubmit();
       }
       return;
@@ -137,19 +147,66 @@ export default function TakeTestPage() {
     return () => clearInterval(timer);
   }, [timeLeft, isTimeUp]);
 
-  // Initialize user answers array
+  // Initialize user answers array and shuffle questions/answers
+  // This runs ONLY ONCE when component mounts with test data
   useEffect(() => {
-    if (test?.questions) {
+    if (
+      test?.questions &&
+      test.questions.length > 0 &&
+      displayQuestions.length === 0
+    ) {
+      console.log(
+        "🔄 Initializing shuffle - Component mounted at:",
+        new Date().toISOString(),
+      );
+      console.log("📝 Original questions count:", test.questions.length);
+      console.log(
+        "📋 Original order:",
+        test.questions.map((q: any) => q.id.slice(0, 8)),
+      );
+
+      // Type casting to include shuffle fields
+      const testData = test as any;
+
+      // Force shuffle with timestamp seed to ensure different order each time
+      const timestamp = Date.now();
+      console.log("⏰ Using timestamp seed:", timestamp);
+
+      const questionsToDisplay = shuffleTestContent(
+        test.questions,
+        testData?.shuffleQuestions ?? false,
+        testData?.shuffleAnswers ?? false,
+      );
+
+      console.log("✅ Shuffle complete!");
+      console.log("🔀 Shuffle settings:", {
+        shuffleQuestions: testData?.shuffleQuestions,
+        shuffleAnswers: testData?.shuffleAnswers,
+      });
+      console.log(
+        "📋 New order:",
+        questionsToDisplay.map((q: any) => q.id.slice(0, 8)),
+      );
+      console.log(
+        "🎲 Order changed:",
+        JSON.stringify(test.questions.map((q: any) => q.id)) !==
+          JSON.stringify(questionsToDisplay.map((q: any) => q.id)),
+      );
+
+      setDisplayQuestions(questionsToDisplay);
+
+      // Initialize user answers based on shuffled questions
       setUserAnswers(
-        test.questions.map((q) => ({
+        questionsToDisplay.map((q) => ({
           questionId: q.id,
           selectedAnswerIds: [],
+          essayAnswer: "",
         })),
       );
     }
-  }, [test?.questions]);
+  }, [test, displayQuestions.length]);
 
-  const questions = test?.questions ?? [];
+  const questions = displayQuestions.length > 0 ? displayQuestions : [];
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
   const attemptNumber = (previousResults?.[0]?.attemptNumber ?? 0) + 1;
@@ -178,7 +235,7 @@ export default function TakeTestPage() {
           ...updated[answerIndex],
           selectedAnswerIds: checked ? [answerId] : [],
         };
-      } else {
+      } else if (currentQuestion.questionType === "MULTIPLE_CHOICE") {
         // Multiple choice - toggle selection
         const currentIds = updated[answerIndex].selectedAnswerIds;
         updated[answerIndex] = {
@@ -193,6 +250,26 @@ export default function TakeTestPage() {
     });
   };
 
+  const handleEssayChange = (value: string) => {
+    if (!currentQuestion) return;
+
+    setUserAnswers((prev) => {
+      const updated = [...prev];
+      const answerIndex = updated.findIndex(
+        (a) => a.questionId === currentQuestion.id,
+      );
+
+      if (answerIndex === -1) return prev;
+
+      updated[answerIndex] = {
+        ...updated[answerIndex],
+        essayAnswer: value,
+      };
+
+      return updated;
+    });
+  };
+
   // Get current question's selected answers
   const getCurrentAnswers = () => {
     const answer = userAnswers.find(
@@ -201,15 +278,27 @@ export default function TakeTestPage() {
     return answer?.selectedAnswerIds ?? [];
   };
 
+  const getCurrentEssayAnswer = () => {
+    const answer = userAnswers.find(
+      (a) => a.questionId === currentQuestion?.id,
+    );
+    return answer?.essayAnswer ?? "";
+  };
+
   // Calculate score
   const calculateScore = () => {
+    // If there are essay questions, we can't calculate score immediately
+    const hasEssay = questions.some((q) => q.questionType === "ESSAY");
+    if (hasEssay) return null;
+
     let correctCount = 0;
 
-    questions.forEach((question) => {
+    questions.forEach((question: any) => {
       const userAnswer = userAnswers.find((a) => a.questionId === question.id);
       const selectedIds = userAnswer?.selectedAnswerIds ?? [];
-      const correctAnswers = question.answers?.filter((a) => a.correct) ?? [];
-      const correctIds = correctAnswers.map((a) => a.id);
+      const correctAnswers =
+        question.answers?.filter((a: any) => a.correct) ?? [];
+      const correctIds = correctAnswers.map((a: any) => a.id);
 
       // Check if answer is correct
       const isCorrect =
@@ -219,13 +308,34 @@ export default function TakeTestPage() {
       if (isCorrect) correctCount++;
     });
 
-    return Math.round((correctCount / totalQuestions) * 100);
+    // Use test's maxScore (default 10)
+    const maxScore = test?.maxScore || 10;
+    const score = (correctCount / totalQuestions) * maxScore;
+
+    // Round to 1 decimal place
+    return Math.round(score * 10) / 10;
   };
 
   // Submit test
   const handleSubmit = async () => {
-    if (!userId || !componentId || !testId) {
-      message.error("Thiếu thông tin để nộp bài!");
+    // Validation first - before any processing
+    if (!userId) {
+      return;
+    }
+    if (!componentId) {
+      message.error("Không tìm thấy thông tin bài kiểm tra!");
+      return;
+    }
+    if (!testId) {
+      message.error("Không tìm thấy ID bài kiểm tra!");
+      return;
+    }
+    if (!test) {
+      message.error("Dữ liệu bài kiểm tra không hợp lệ!");
+      return;
+    }
+    if (questions.length === 0) {
+      message.error("Bài kiểm tra không có câu hỏi!");
       return;
     }
 
@@ -233,17 +343,67 @@ export default function TakeTestPage() {
 
     try {
       const mark = calculateScore();
-      const status = mark >= 50 ? "PASSED" : "FAILED";
+      const maxScore = test?.maxScore || 10;
+
+      let status: "PASSED" | "FAILED" | "PENDING" = "PENDING";
+
+      if (mark !== null) {
+        status = mark >= maxScore / 2 ? "PASSED" : "FAILED";
+      }
+
+      // Convert userAnswers to proper format for database
+      console.log("Processing user answers:", { userAnswers, questions });
+
+      const formattedAnswers: Record<string, string | string[]> = {};
+      userAnswers.forEach((answer) => {
+        if (!answer.questionId) {
+          console.warn("Answer missing questionId:", answer);
+          return;
+        }
+
+        const question = questions.find((q) => q.id === answer.questionId);
+        if (!question) {
+          console.warn("Question not found for answer:", answer.questionId);
+          return;
+        }
+
+        if (question.questionType === "ESSAY") {
+          // For essay questions, save the essay answer text
+          formattedAnswers[answer.questionId] = answer.essayAnswer || "";
+        } else {
+          // For multiple choice questions, save selected answer IDs
+          formattedAnswers[answer.questionId] = answer.selectedAnswerIds || [];
+        }
+      });
+
+      console.log("Formatted answers:", formattedAnswers);
+
+      // Ensure all required fields are present and valid
+      if (!userId || !componentId || attemptNumber < 1) {
+        throw new Error(
+          "Missing required fields: userId, componentId, or invalid attemptNumber",
+        );
+      }
+
+      const finalMark = mark ?? 0;
+      const submitData = {
+        userId,
+        componentId,
+        attemptNumber,
+        userAnswers: formattedAnswers,
+        mark: Math.max(0, Math.round(finalMark)), // Ensure non-negative integer
+        status,
+      };
+
+      console.log("Submitting test result:", submitData);
+
+      // Validate the data structure before submission
+      if (Object.keys(formattedAnswers).length === 0) {
+        console.warn("No answers to submit, but proceeding anyway");
+      }
 
       await createTestResult.mutateAsync({
-        data: {
-          userId,
-          componentId,
-          attemptNumber,
-          userAnswers: userAnswers as any,
-          mark,
-          status,
-        },
+        data: submitData,
       });
 
       message.success("Nộp bài thành công!");
@@ -254,7 +414,20 @@ export default function TakeTestPage() {
       );
     } catch (error) {
       console.error("Submit error:", error);
-      message.error("Có lỗi xảy ra khi nộp bài!");
+
+      // More specific error messages
+      if (error && typeof error === "object" && "message" in error) {
+        const errorMessage = (error as any).message;
+        if (errorMessage.includes("required")) {
+          message.error("Thiếu thông tin bắt buộc. Vui lòng kiểm tra lại!");
+        } else if (errorMessage.includes("validation")) {
+          message.error("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại!");
+        } else {
+          message.error(`Lỗi nộp bài: ${errorMessage}`);
+        }
+      } else {
+        message.error("Có lỗi xảy ra khi nộp bài! Vui lòng thử lại.");
+      }
     } finally {
       setIsSubmitting(false);
       setShowSubmitConfirm(false);
@@ -272,14 +445,21 @@ export default function TakeTestPage() {
   const goPrev = () => goToQuestion(currentQuestionIndex - 1);
 
   // Count answered questions
-  const answeredCount = userAnswers.filter(
-    (a) => a.selectedAnswerIds.length > 0,
-  ).length;
+  const answeredCount = userAnswers.filter((a) => {
+    const question = questions.find((q) => q.id === a.questionId);
+    if (question?.questionType === "ESSAY") {
+      return a.essayAnswer && a.essayAnswer.trim().length > 0;
+    } else {
+      return a.selectedAnswerIds.length > 0;
+    }
+  }).length;
 
   if (testLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Spin size="large" tip="Đang tải bài kiểm tra..." />
+        <Spin size="large" tip="Đang tải bài kiểm tra...">
+          <div style={{ minHeight: 50, minWidth: 100 }} />
+        </Spin>
       </div>
     );
   }
@@ -394,7 +574,9 @@ export default function TakeTestPage() {
               <Tag color="geekblue" style={{ marginBottom: 12 }}>
                 {currentQuestion.questionType === "SINGLE_CHOICE"
                   ? "Chọn 1 đáp án đúng"
-                  : "Chọn các đáp án đúng"}
+                  : currentQuestion.questionType === "MULTIPLE_CHOICE"
+                    ? "Chọn các đáp án đúng"
+                    : `Tự luận (Tối đa ${currentQuestion.maxLength || 1000} ký tự)`}
               </Tag>
               <Title level={4} style={{ marginBottom: 0 }}>
                 Câu {currentQuestionIndex + 1}: {currentQuestion.content}
@@ -414,28 +596,32 @@ export default function TakeTestPage() {
                     size={12}
                     style={{ width: "100%" }}
                   >
-                    {currentQuestion.answers?.map((answer, idx) => (
-                      <Card
-                        key={answer.id}
-                        size="small"
-                        hoverable
-                        style={{
-                          backgroundColor: selectedAnswers.includes(answer.id)
-                            ? "#e6f4ff"
-                            : "white",
-                          border: selectedAnswers.includes(answer.id)
-                            ? "2px solid #1890ff"
-                            : "1px solid #d9d9d9",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleAnswerChange(answer.id, true)}
-                      >
-                        <Radio value={answer.id}>
-                          <Text strong>{String.fromCharCode(65 + idx)}. </Text>
-                          {answer.content}
-                        </Radio>
-                      </Card>
-                    ))}
+                    {currentQuestion.answers?.map(
+                      (answer: any, idx: number) => (
+                        <Card
+                          key={answer.id}
+                          size="small"
+                          hoverable
+                          style={{
+                            backgroundColor: selectedAnswers.includes(answer.id)
+                              ? "#e6f4ff"
+                              : "white",
+                            border: selectedAnswers.includes(answer.id)
+                              ? "2px solid #1890ff"
+                              : "1px solid #d9d9d9",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => handleAnswerChange(answer.id, true)}
+                        >
+                          <Radio value={answer.id}>
+                            <Text strong>
+                              {String.fromCharCode(65 + idx)}.{" "}
+                            </Text>
+                            {answer.content}
+                          </Radio>
+                        </Card>
+                      ),
+                    )}
                   </Space>
                 </Radio.Group>
               ) : (
@@ -448,35 +634,51 @@ export default function TakeTestPage() {
                     size={12}
                     style={{ width: "100%" }}
                   >
-                    {currentQuestion.answers?.map((answer, idx) => (
-                      <Card
-                        key={answer.id}
-                        size="small"
-                        hoverable
-                        style={{
-                          backgroundColor: selectedAnswers.includes(answer.id)
-                            ? "#e6f4ff"
-                            : "white",
-                          border: selectedAnswers.includes(answer.id)
-                            ? "2px solid #1890ff"
-                            : "1px solid #d9d9d9",
-                          cursor: "pointer",
-                        }}
-                        onClick={() =>
-                          handleAnswerChange(
-                            answer.id,
-                            !selectedAnswers.includes(answer.id),
-                          )
-                        }
-                      >
-                        <Checkbox value={answer.id}>
-                          <Text strong>{String.fromCharCode(65 + idx)}. </Text>
-                          {answer.content}
-                        </Checkbox>
-                      </Card>
-                    ))}
+                    {currentQuestion.answers?.map(
+                      (answer: any, idx: number) => (
+                        <Card
+                          key={answer.id}
+                          size="small"
+                          hoverable
+                          style={{
+                            backgroundColor: selectedAnswers.includes(answer.id)
+                              ? "#e6f4ff"
+                              : "white",
+                            border: selectedAnswers.includes(answer.id)
+                              ? "2px solid #1890ff"
+                              : "1px solid #d9d9d9",
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            handleAnswerChange(
+                              answer.id,
+                              !selectedAnswers.includes(answer.id),
+                            )
+                          }
+                        >
+                          <Checkbox value={answer.id}>
+                            <Text strong>
+                              {String.fromCharCode(65 + idx)}.{" "}
+                            </Text>
+                            {answer.content}
+                          </Checkbox>
+                        </Card>
+                      ),
+                    )}
                   </Space>
                 </Checkbox.Group>
+              )}
+
+              {currentQuestion.questionType === "ESSAY" && (
+                <Input.TextArea
+                  rows={8}
+                  maxLength={currentQuestion.maxLength || 1000}
+                  showCount
+                  placeholder="Nhập câu trả lời của bạn..."
+                  value={getCurrentEssayAnswer()}
+                  onChange={(e) => handleEssayChange(e.target.value)}
+                  style={{ fontSize: 16 }}
+                />
               )}
             </Space>
           </Space>
@@ -487,9 +689,13 @@ export default function TakeTestPage() {
           <Row gutter={[16, 16]}>
             <Col span={24}>
               <Space size={8} wrap>
-                {questions.map((_, idx) => {
+                {questions.map((question, idx) => {
+                  const userAnswer = userAnswers[idx];
                   const isAnswered =
-                    userAnswers[idx]?.selectedAnswerIds.length > 0;
+                    question.questionType === "ESSAY"
+                      ? userAnswer?.essayAnswer &&
+                        userAnswer.essayAnswer.trim().length > 0
+                      : userAnswer?.selectedAnswerIds.length > 0;
                   const isCurrent = idx === currentQuestionIndex;
                   return (
                     <Button
@@ -560,8 +766,17 @@ export default function TakeTestPage() {
                     ) : (
                       <Button
                         type="primary"
-                        onClick={() => setShowSubmitConfirm(true)}
+                        onClick={() => {
+                          console.log("Submit button clicked", {
+                            userId,
+                            componentId,
+                            testId,
+                            userAnswers: userAnswers.length,
+                          });
+                          setShowSubmitConfirm(true);
+                        }}
                         icon={<Send size={16} />}
+                        disabled={!userId || !componentId || !testId}
                         style={{
                           background:
                             "linear-gradient(135deg, #10b981 0%, #059669 100%)",

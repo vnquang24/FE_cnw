@@ -349,7 +349,9 @@ function UserCoursesContent() {
   if (!userId || isLoading || isFetching) {
     return (
       <div className="flex justify-center items-center h-72">
-        <Spin size="large" tip="Đang tải khóa học của bạn..." />
+        <Spin size="large" tip="Đang tải khóa học của bạn...">
+          <div style={{ minHeight: 50, minWidth: 100 }} />
+        </Spin>
       </div>
     );
   }

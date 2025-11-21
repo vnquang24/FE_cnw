@@ -118,8 +118,10 @@ export default function CourseDetailPage() {
 
   if (!courseId || courseLoading || courseFetching) {
     return (
-      <div className="flex justify-center items-center h-72">
-        <Spin size="large" tip="Đang tải thông tin khóa học..." />
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" tip="Đang tải thông tin khóa học...">
+          <div style={{ minHeight: 50, minWidth: 100 }} />
+        </Spin>
       </div>
     );
   }

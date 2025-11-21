@@ -4,7 +4,7 @@
  * @version 1.0
  */
 import * as reactQuery from "@tanstack/react-query";
-import { useCnwContext, CnwContext, queryKeyFn } from "./cnwContext";
+import { type CnwContext, useCnwContext, queryKeyFn } from "./cnwContext";
 import { deepMerge } from "./cnwUtils";
 import type * as Fetcher from "./cnwFetcher";
 import { cnwFetch } from "./cnwFetcher";

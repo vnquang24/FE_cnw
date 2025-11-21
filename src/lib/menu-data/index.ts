@@ -30,24 +30,19 @@ export const menuItems: MenuItem[] = [
   {
     icon: FileText,
     label: "Bài kiểm tra",
-    pathname: "/admin/tests",
-    // subMenu: [
-    //   {
-    //     label: "Danh sách bài kiểm tra",
-    //     pathname: "/admin/tests",
-    //     icon: CircleDot,
-    //   },
-    // {
-    //   label: "Câu hỏi",
-    //   pathname: "/admin/questions",
-    //   icon: CircleDot,
-    // },
-    // {
-    //   label: "Kết quả kiểm tra",
-    //   pathname: "/admin/test-results",
-    //   icon: CircleDot,
-    // },
-    // ],
+    pathname: "",
+    subMenu: [
+      {
+        label: "Danh sách bài kiểm tra",
+        pathname: "/admin/tests",
+        icon: CircleDot,
+      },
+      {
+        label: "Kết quả kiểm tra",
+        pathname: "/admin/test-results",
+        icon: BarChart3,
+      },
+    ],
   },
   {
     icon: Users,
