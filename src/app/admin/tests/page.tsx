@@ -596,20 +596,32 @@ export default function TestsPage() {
             // Trigger re-render when form values change
             setFilterTrigger((prev) => prev + 1);
           }}
+          className="w-full"
         >
-          <Row gutter={[16, 16]} align="middle" style={{ width: "100%" }}>
-            <Col flex="auto">
-              <Space size="middle">
-                <Form.Item name="searchText" style={{ marginBottom: 0 }}>
+          <Row
+            gutter={[16, 16]}
+            align="middle"
+            style={{ width: "100%" }}
+            justify="space-between"
+          >
+            <Col xs={24} lg={18}>
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <Form.Item
+                  name="searchText"
+                  style={{ marginBottom: 0, flex: 1 }}
+                >
                   <Input
                     placeholder="Tìm kiếm theo tên bài kiểm tra..."
                     prefix={<Search size={14} />}
-                    style={{ width: 300 }}
+                    className="w-full"
                     allowClear
                   />
                 </Form.Item>
                 <Form.Item name="sortOrder" style={{ marginBottom: 0 }}>
-                  <Select style={{ width: 200 }} placeholder="Sắp xếp theo">
+                  <Select
+                    className="w-full sm:w-[200px]"
+                    placeholder="Sắp xếp theo"
+                  >
                     <Option value="newest">Mới nhất</Option>
                     <Option value="oldest">Cũ nhất</Option>
                     <Option value="name-asc">Tên A-Z</Option>
@@ -618,13 +630,14 @@ export default function TestsPage() {
                     <Option value="highest-score">Điểm cao nhất</Option>
                   </Select>
                 </Form.Item>
-              </Space>
+              </div>
             </Col>
-            <Col>
+            <Col xs={24} lg={6} style={{ textAlign: "right" }}>
               <Button
                 type="primary"
                 icon={<Plus size={14} />}
                 onClick={() => setModalState({ type: "create", open: true })}
+                className="w-full sm:w-auto"
               >
                 Tạo bài kiểm tra mới
               </Button>
@@ -640,11 +653,13 @@ export default function TestsPage() {
             columns={columns}
             dataSource={filteredAndSortedTests}
             rowKey="id"
+            scroll={{ x: 1000 }}
             pagination={{
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} của ${total} bài kiểm tra`,
+              responsive: true,
             }}
           />
         </Spin>

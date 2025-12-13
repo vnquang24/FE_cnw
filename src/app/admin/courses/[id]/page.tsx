@@ -451,11 +451,13 @@ export default function CourseDetailPage() {
                 dataSource={lessons}
                 loading={lessonsLoading}
                 rowKey="id"
+                scroll={{ x: 800 }}
                 pagination={{
                   pageSize: 10,
                   showSizeChanger: true,
                   showTotal: (total, range) =>
                     `${range[0]}-${range[1]} của ${total} bài học`,
+                  responsive: true,
                 }}
                 locale={{
                   emptyText: (

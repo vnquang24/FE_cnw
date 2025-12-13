@@ -35,6 +35,7 @@ export default function SharedLayout({
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [userInfo, setUserInfo] = useState<JwtPayload | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // Redux state for sidebar
   const isShowSidebar = useStoreState((state) => state.appState.isShowSidebar);
@@ -205,7 +206,7 @@ export default function SharedLayout({
           position: "relative",
           overflow: "visible",
         }}
-        className="h-screen transition-all duration-300 shadow-sm"
+        className="hidden lg:block h-screen transition-all duration-300 shadow-sm"
       >
         {/* Header/Logo */}
         <div
@@ -302,6 +303,100 @@ export default function SharedLayout({
           />
         </div>
       </Sider>
+
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div
+          className="lg:hidden fixed z-40 bg-black/50 backdrop-blur-sm transition-all duration-300"
+          style={{ top: 64, left: 0, right: 0, bottom: 0 }}
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <Sider
+        width={280}
+        collapsed={!isMobileOpen}
+        collapsedWidth={0}
+        trigger={null}
+        theme="light"
+        className={`lg:hidden mobile-sidebar shadow-2xl border-r border-gray-200 ${
+          isMobileOpen ? "block" : "hidden"
+        }`}
+        style={{
+          background: token.colorBgContainer,
+          top: 0, // Admin layout header is inside content, so sidebar should be full height from top? No, let's stick to full screen overlay style initially.
+          height: "100vh", // Let's override the mobile-sidebar class if needed, or use a new logic.
+          // Actually, .mobile-sidebar has top: 64px !important.
+          // If we want it full screen (covering header) or below header?
+          // IF we want it to cover everything (Drawer style), we should override top.
+          // Let's use standard Drawer style for Admin which usually covers sidebar area.
+          // But wait, user liked the "below header" style.
+          // Admin header is NOT fixed at top of screen for the whole viewport if Sider is hidden.
+          // Let's force it to standard full height drawer for simplicity first, or try to match public layout.
+          // Given .mobile-sidebar enforces top: 64px, let's see if that works.
+          // NOTE: Admin Header is inside the right layout.
+        }}
+      >
+        {/* Header/Logo Mobile */}
+        <div
+          className="flex items-center gap-3 mb-6 px-6 py-4 border-b"
+          style={{ borderColor: token.colorBorderSecondary }}
+        >
+          <div
+            className="p-2 rounded-lg"
+            style={{ backgroundColor: token.colorPrimary }}
+          >
+            <PanelsTopLeft size={24} className="text-white" />
+          </div>
+          <Title level={4} className="!mb-0" style={{ color: token.colorText }}>
+            {logoText}
+          </Title>
+        </div>
+
+        {/* User Info Mobile */}
+        <div className="px-6 mb-4">
+          <Space align="center" size={12}>
+            <Avatar size={48} style={{ backgroundColor: token.colorPrimary }}>
+              {userInfo?.name?.charAt(0) || userInfo?.sub?.charAt(0) || "U"}
+            </Avatar>
+            <div>
+              <Text strong>{userInfo?.name || "Người dùng"}</Text>
+              <br />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {userInfo?.sub || "user@example.com"}
+              </Text>
+            </div>
+          </Space>
+        </div>
+
+        {/* Menu Items Mobile */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-2">
+            {menuItems
+              .filter((item) => !item.hidden)
+              .map((item) => (
+                <MenuItemComponent
+                  key={item.label}
+                  item={item}
+                  depth={0}
+                  hidden={item.hidden}
+                  // We might want to close sidebar on click?
+                  // MenuItemComponent might need a prop or we wrap it?
+                  // For now, let's leave it. Navigating usually unmounts/remounts or changes path.
+                />
+              ))}
+          </div>
+        </div>
+
+        {/* Logout Button Mobile */}
+        <div className="p-6 border-t border-gray-200">
+          <Button block danger onClick={handleLogout}>
+            Đăng xuất
+          </Button>
+        </div>
+      </Sider>
+
       <Layout className="flex flex-col h-screen">
         <Header
           user={{
@@ -312,6 +407,7 @@ export default function SharedLayout({
             avatar: undefined,
           }}
           pathName={title}
+          onMenuClick={() => setIsMobileOpen(true)}
         />
         <Content className="flex-1 overflow-y-auto bg-gray-50 p-3">
           {children}

@@ -87,6 +87,20 @@ body {
   background-color: #f0f0f0 !important;
 }
 
+/* Hide sider trigger button */
+.ant-layout-sider-trigger {
+  display: none !important;
+}
+
+/* Force mobile sidebar to full height below header */
+@media (max-width: 1023px) {
+  .ant-layout-sider.ant-layout-sider-light {
+    height: calc(100vh - 64px) !important;
+    min-height: calc(100vh - 64px) !important;
+    max-height: calc(100vh - 64px) !important;
+  }
+}
+
 /* Force all menus to have appropriate backgrounds */
 .ant-menu-horizontal {
   background-color: transparent !important;
@@ -136,4 +150,21 @@ body {
   to {
     transform: translateX(0);
   }
+}
+
+/* Mobile sidebar explicit override */
+.mobile-sidebar {
+  position: fixed !important;
+  top: 64px !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  height: calc(100vh - 64px) !important;
+  max-height: calc(100vh - 64px) !important;
+  z-index: 1000 !important;
+}
+
+.mobile-sidebar .ant-layout-sider-children {
+  height: 100% !important;
+  overflow-y: auto !important;
+  background-color: #ffffff !important;
 }

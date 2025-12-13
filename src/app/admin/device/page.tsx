@@ -101,7 +101,9 @@ const ManageDevicePage: React.FC = () => {
   // Tạo một thiết bị hiện tại (để so sánh và hiển thị)
   const currentDeviceName =
     typeof window !== "undefined"
-      ? `${window.navigator.userAgent.split(" ")[0]} - ${window.navigator.platform}`
+      ? `${window.navigator.userAgent.split(" ")[0]} - ${
+          window.navigator.platform
+        }`
       : "";
 
   // Xác định icon thiết bị
@@ -262,6 +264,7 @@ const ManageDevicePage: React.FC = () => {
           dataSource={tableData}
           loading={isLoading}
           pagination={false}
+          scroll={{ x: 800 }}
           locale={{
             emptyText: (
               <Empty

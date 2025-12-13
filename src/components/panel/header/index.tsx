@@ -1,7 +1,7 @@
 import React from "react";
-import { User, Settings, LogOut, Info } from "lucide-react";
+import { User, Settings, LogOut, Info, Menu } from "lucide-react";
 import { HeaderProps } from "./type";
-import { Dropdown, Avatar, Typography, Space, theme } from "antd";
+import { Dropdown, Avatar, Typography, Space, theme, Button } from "antd";
 import type { MenuProps } from "antd";
 import { logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,7 @@ import { showToast } from "@/lib/toast";
 
 const { Text } = Typography;
 
-const Header: React.FC<HeaderProps> = ({ pathName, user }) => {
+const Header: React.FC<HeaderProps> = ({ pathName, user, onMenuClick }) => {
   const router = useRouter();
   const { token } = theme.useToken();
 
@@ -70,13 +70,19 @@ const Header: React.FC<HeaderProps> = ({ pathName, user }) => {
 
   return (
     <header
-      className="flex justify-between items-center px-4 py-2 shadow-sm"
+      className="flex justify-between items-center px-4 py-2 shadow-sm h-16"
       style={{
         backgroundColor: token.colorBgContainer,
         borderBottom: `1px solid ${token.colorBorderSecondary}`,
       }}
     >
-      <div>
+      <div className="flex items-center gap-3">
+        <Button
+          type="text"
+          icon={<Menu size={20} />}
+          className="lg:hidden"
+          onClick={onMenuClick}
+        />
         <Text
           className="text-xl font-semibold"
           style={{ color: token.colorPrimary }}

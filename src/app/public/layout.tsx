@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -63,6 +63,18 @@ export default function PublicLayout({
   const handleMenuClick = (key: string) => {
     router.push(`/public${key}`);
   };
+
+  // Prevent scrolling when mobile menu is open
+  useEffect(() => {
+    if (!collapsed) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [collapsed]);
 
   return (
     <Layout className="min-h-screen" style={{ backgroundColor: "#ffffff" }}>
@@ -133,20 +145,29 @@ export default function PublicLayout({
       </Header>
 
       <Layout style={{ backgroundColor: "#ffffff" }}>
+        {/* Mobile overlay - must be before Sider to maintain proper z-index */}
+        {!collapsed && (
+          <div
+            className="lg:hidden fixed z-40 bg-black/20 backdrop-blur-sm transition-all duration-300"
+            style={{ top: "64px", left: 0, right: 0, bottom: 0 }}
+            onClick={() => setCollapsed(true)}
+          />
+        )}
+
         {/* Sidebar for mobile */}
         <Sider
           collapsed={collapsed}
           onCollapse={setCollapsed}
           breakpoint="lg"
           collapsedWidth="0"
+          trigger={null}
           theme="light"
           width={280}
           className={`lg:hidden ${
             collapsed ? "hidden" : "block"
-          } fixed left-0 top-16 z-50 h-full shadow-2xl border-r border-gray-200`}
+          } mobile-sidebar shadow-2xl border-r border-gray-200`}
           style={{
             backgroundColor: "#ffffff",
-            height: "calc(100vh - 64px)", // Trừ đi height của header
             transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
@@ -184,14 +205,6 @@ export default function PublicLayout({
           {children}
         </Content>
       </Layout>
-
-      {/* Mobile overlay */}
-      {!collapsed && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity duration-300"
-          onClick={() => setCollapsed(true)}
-        />
-      )}
     </Layout>
   );
 }
