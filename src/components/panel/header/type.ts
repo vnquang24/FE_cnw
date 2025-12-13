@@ -11,4 +11,5 @@ export type User = {
 export type HeaderProps = {
   user: User;
   pathName: string;
+  onMenuClick?: () => void;
 };

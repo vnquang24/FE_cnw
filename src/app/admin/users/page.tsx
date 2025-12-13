@@ -251,7 +251,9 @@ function UsersPageContent() {
     const newLockedState = !user.locked;
     modal.confirm({
       title: newLockedState ? "Khóa tài khoản" : "Mở khóa tài khoản",
-      content: `Bạn có chắc chắn muốn ${newLockedState ? "khóa" : "mở khóa"} tài khoản này?`,
+      content: `Bạn có chắc chắn muốn ${
+        newLockedState ? "khóa" : "mở khóa"
+      } tài khoản này?`,
       okText: "Xác nhận",
       cancelText: "Hủy",
       onOk: () => {
@@ -517,32 +519,33 @@ function UsersPageContent() {
 
       {/* Filters and Actions */}
       <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]} align="middle">
-          <Col flex="auto">
-            <Space>
+        <Row gutter={[16, 16]} align="middle" justify="space-between">
+          <Col xs={24} lg={18}>
+            <div className="flex flex-col sm:flex-row gap-4">
               <Input
                 placeholder="Tìm kiếm theo tên hoặc email..."
                 prefix={<Search size={14} />}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                style={{ width: 300 }}
+                className="w-full sm:w-[300px]"
               />
               <Select
                 value={filterRole}
                 onChange={setFilterRole}
-                style={{ width: 150 }}
+                className="w-full sm:w-[150px]"
               >
                 <Option value="all">Tất cả vai trò</Option>
                 <Option value="admin">Quản trị viên</Option>
                 <Option value="user">Người dùng</Option>
               </Select>
-            </Space>
+            </div>
           </Col>
-          <Col>
+          <Col xs={24} lg={6} style={{ textAlign: "right" }}>
             <Button
               type="primary"
               icon={<Plus size={14} />}
               onClick={handleCreate}
+              className="w-full sm:w-auto"
             >
               Thêm người dùng mới
             </Button>
@@ -550,18 +553,19 @@ function UsersPageContent() {
         </Row>
       </Card>
 
-      {/* Users Table */}
       <Card>
         <Table
           columns={columns}
           dataSource={filteredUsers}
           rowKey="id"
           loading={isLoading}
+          scroll={{ x: 1000 }}
           pagination={{
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} người dùng`,
+            responsive: true,
           }}
         />
       </Card>

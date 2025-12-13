@@ -120,7 +120,9 @@ export default function MinioManagerPage() {
     } catch (error) {
       console.error("Upload error:", error);
       showToast.error(
-        `Upload ${file.name} thất bại: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Upload ${file.name} thất bại: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
       );
     }
   };
@@ -293,13 +295,15 @@ export default function MinioManagerPage() {
       <Card>
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} md={12}>
-            <Space>
+            <Space className="w-full flex-wrap">
               {currentPath && (
                 <Button onClick={goBack} icon={<ReloadOutlined />}>
                   Quay lại
                 </Button>
               )}
-              <Text strong>Đường dẫn: /{currentPath}</Text>
+              <Text strong className="break-all">
+                Đường dẫn: /{currentPath}
+              </Text>
             </Space>
           </Col>
           <Col xs={24} md={12} style={{ textAlign: "right" }}>
@@ -350,6 +354,7 @@ export default function MinioManagerPage() {
               showQuickJumper: true,
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} của ${total} items`,
+              responsive: true,
             }}
             scroll={{ x: 800 }}
           />

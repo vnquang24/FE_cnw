@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -64,6 +64,18 @@ export default function PublicLayout({
     router.push(`/public${key}`);
   };
 
+  // Prevent scrolling when mobile menu is open
+  useEffect(() => {
+    if (!collapsed) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [collapsed]);
+
   return (
     <Layout className="min-h-screen" style={{ backgroundColor: "#ffffff" }}>
       {/* Header với navigation ngang */}
@@ -85,7 +97,7 @@ export default function PublicLayout({
               <div className="h-10 w-10 flex items-center justify-center rounded-full bg-blue-200">
                 <BookOutlined />
               </div>
-              <div className="">
+              <div className="hidden sm:block">
                 <Text className="text-sm">Học tập trực tuyến</Text>
               </div>
             </Link>
@@ -108,45 +120,55 @@ export default function PublicLayout({
           </div>
 
           {/* Actions bên phải */}
-          <div className="flex items-center space-x-4">
-            <Space size="middle">
-              {/* Search */}
-
+          <div className="flex items-center">
+            <Space size="small" className="sm:space-x-2">
               {/* Auth buttons */}
-              <div className="flex items-center space-x-2">
-                <Button
-                  type="default"
-                  icon={<LoginOutlined />}
-                  onClick={() => router.push("/login")}
-                  className="hidden sm:flex"
-                >
-                  Đăng nhập
-                </Button>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => router.push("/register")}
-                >
-                  <span className="hidden sm:inline">Đăng ký</span>
-                </Button>
-              </div>
+              <Button
+                type="default"
+                icon={<LoginOutlined />}
+                onClick={() => router.push("/login")}
+                className="hidden sm:flex"
+              >
+                Đăng nhập
+              </Button>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => router.push("/register")}
+                className="h-10"
+              >
+                <span className="hidden sm:inline">Đăng ký</span>
+              </Button>
             </Space>
           </div>
         </div>
       </Header>
 
       <Layout style={{ backgroundColor: "#ffffff" }}>
+        {/* Mobile overlay - must be before Sider to maintain proper z-index */}
+        {!collapsed && (
+          <div
+            className="lg:hidden fixed z-40 bg-black/20 backdrop-blur-sm transition-all duration-300"
+            style={{ top: "64px", left: 0, right: 0, bottom: 0 }}
+            onClick={() => setCollapsed(true)}
+          />
+        )}
+
         {/* Sidebar for mobile */}
         <Sider
           collapsed={collapsed}
           onCollapse={setCollapsed}
           breakpoint="lg"
           collapsedWidth="0"
+          trigger={null}
           theme="light"
-          className={`lg:hidden ${collapsed ? "hidden" : "block"} fixed left-0 top-16 z-50 h-full shadow-lg border-r border-gray-200`}
+          width={280}
+          className={`lg:hidden ${
+            collapsed ? "hidden" : "block"
+          } mobile-sidebar shadow-2xl border-r border-gray-200`}
           style={{
             backgroundColor: "#ffffff",
-            height: "calc(100vh - 64px)", // Trừ đi height của header
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
           <Menu
@@ -162,6 +184,15 @@ export default function PublicLayout({
                 handleMenuClick(item.key);
                 setCollapsed(true);
               },
+              className:
+                "hover:bg-blue-50 transition-colors duration-200 mx-2 rounded-lg mb-1",
+              style: {
+                height: "48px",
+                display: "flex",
+                alignItems: "center",
+                fontSize: "15px",
+                fontWeight: "500",
+              },
             }))}
           />
         </Sider>
@@ -174,14 +205,6 @@ export default function PublicLayout({
           {children}
         </Content>
       </Layout>
-
-      {/* Mobile overlay */}
-      {!collapsed && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-25"
-          onClick={() => setCollapsed(true)}
-        />
-      )}
     </Layout>
   );
 }

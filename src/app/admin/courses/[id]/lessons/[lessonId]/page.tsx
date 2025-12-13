@@ -1007,7 +1007,9 @@ function ContentTab({
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Tổng ${total} nội dung`,
+          responsive: true,
         }}
+        scroll={{ x: 600 }}
         locale={{
           emptyText: (
             <Empty description="Chưa có nội dung nào">
@@ -1131,7 +1133,9 @@ function WordTab({
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Tổng ${total} từ vựng`,
+          responsive: true,
         }}
+        scroll={{ x: 600 }}
         locale={{
           emptyText: (
             <Empty description="Chưa có từ vựng nào">
@@ -1298,7 +1302,9 @@ function VideoTab({
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Tổng ${total} video`,
+          responsive: true,
         }}
+        scroll={{ x: 600 }}
         locale={{
           emptyText: (
             <Empty description="Chưa có video nào">
@@ -1408,7 +1414,9 @@ function TestTab({ components, loading, onAdd, onEdit, onDelete }: TabProps) {
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Tổng ${total} bài kiểm tra`,
+          responsive: true,
         }}
+        scroll={{ x: 600 }}
         locale={{
           emptyText: (
             <Empty description="Chưa có bài kiểm tra nào">

@@ -10,6 +10,7 @@ import {
   Typography,
   Row,
   Col,
+  Grid,
   Statistic,
   Input,
   Select,
@@ -88,6 +89,7 @@ function EnrollmentsPageContent() {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const { message, modal } = App.useApp();
+  const screens = Grid.useBreakpoint();
 
   // Check if enrollment is expiring soon (within 7 days)
   const isExpiringSoon = (endDate: Date | null | undefined) => {
@@ -438,8 +440,8 @@ function EnrollmentsPageContent() {
     {
       title: "Hành động",
       key: "action",
-      fixed: "right" as const,
       width: 120,
+      fixed: screens.md ? ("right" as const) : undefined,
       align: "center" as const,
       render: (_: any, record: UserCourse) => {
         if (record.enrolmentStatus === "PENDING") {
@@ -590,22 +592,23 @@ function EnrollmentsPageContent() {
       </Row>
 
       {/* Filters */}
+      {/* Filters */}
       <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]} align="middle">
-          <Col flex="auto">
-            <Space size="middle">
+        <Row gutter={[16, 16]} align="middle" justify="space-between">
+          <Col xs={24} lg={18}>
+            <div className="flex flex-col sm:flex-row gap-4">
               <Input
                 placeholder="Tìm kiếm học viên, khóa học..."
                 prefix={<Search size={14} />}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                style={{ width: 300 }}
+                className="w-full sm:w-[300px]"
                 allowClear
               />
               <Select
                 value={filterStatus}
                 onChange={setFilterStatus}
-                style={{ width: 180 }}
+                className="w-full sm:w-[200px]"
                 suffixIcon={<Filter size={14} />}
               >
                 <Option value="all">Tất cả trạng thái</Option>
@@ -625,9 +628,9 @@ function EnrollmentsPageContent() {
                   <Badge status="default" text="Hoàn thành" />
                 </Option>
               </Select>
-            </Space>
+            </div>
           </Col>
-          <Col>
+          <Col xs={24} lg={6} style={{ textAlign: "right" }}>
             <Text type="secondary">
               Hiển thị {filteredEnrollments.length} / {statistics.total} đăng ký
             </Text>
@@ -648,6 +651,7 @@ function EnrollmentsPageContent() {
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} đăng ký`,
+            responsive: true,
           }}
         />
       </Card>

@@ -496,11 +496,12 @@ export default function TestResultsPage() {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear
+              className="w-full"
             />
           </Col>
           <Col xs={24} md={4}>
             <Select
-              style={{ width: "100%" }}
+              className="w-full"
               placeholder="Lọc theo bài test"
               value={filterTest}
               onChange={setFilterTest}
@@ -515,7 +516,7 @@ export default function TestResultsPage() {
           </Col>
           <Col xs={24} md={4}>
             <Select
-              style={{ width: "100%" }}
+              className="w-full"
               placeholder="Lọc theo khóa học"
               value={filterCourse}
               onChange={setFilterCourse}
@@ -530,7 +531,7 @@ export default function TestResultsPage() {
           </Col>
           <Col xs={24} md={3}>
             <Select
-              style={{ width: "100%" }}
+              className="w-full"
               placeholder="Trạng thái"
               value={filterStatus}
               onChange={setFilterStatus}
@@ -543,7 +544,7 @@ export default function TestResultsPage() {
           </Col>
           <Col xs={24} md={4}>
             <RangePicker
-              style={{ width: "100%" }}
+              className="w-full"
               placeholder={["Từ ngày", "Đến ngày"]}
               format="DD/MM/YYYY"
               onChange={(dates) =>
@@ -553,7 +554,7 @@ export default function TestResultsPage() {
           </Col>
           <Col xs={24} md={3}>
             <Select
-              style={{ width: "100%" }}
+              className="w-full"
               placeholder="Sắp xếp"
               value={sortOrder}
               onChange={setSortOrder}
@@ -567,44 +568,44 @@ export default function TestResultsPage() {
             </Select>
           </Col>
         </Row>
-        <Row style={{ marginTop: 16 }}>
-          <Col span={24}>
-            <Space>
-              <Text strong>Nhóm theo:</Text>
-              <Button
-                type={groupBy === "none" ? "primary" : "default"}
-                size="small"
-                onClick={() => setGroupBy("none")}
-              >
-                Không nhóm
-              </Button>
-              <Button
-                type={groupBy === "student" ? "primary" : "default"}
-                size="small"
-                icon={<Users size={14} />}
-                onClick={() => setGroupBy("student")}
-              >
-                Học sinh
-              </Button>
-              <Button
-                type={groupBy === "test" ? "primary" : "default"}
-                size="small"
-                icon={<FileText size={14} />}
-                onClick={() => setGroupBy("test")}
-              >
-                Bài kiểm tra
-              </Button>
-              <Button
-                type={groupBy === "course" ? "primary" : "default"}
-                size="small"
-                icon={<BookOpen size={14} />}
-                onClick={() => setGroupBy("course")}
-              >
-                Khóa học
-              </Button>
-            </Space>
-          </Col>
-        </Row>
+        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <Text strong className="whitespace-nowrap">
+            Nhóm theo:
+          </Text>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type={groupBy === "none" ? "primary" : "default"}
+              size="small"
+              onClick={() => setGroupBy("none")}
+            >
+              Không nhóm
+            </Button>
+            <Button
+              type={groupBy === "student" ? "primary" : "default"}
+              size="small"
+              icon={<Users size={14} />}
+              onClick={() => setGroupBy("student")}
+            >
+              Học sinh
+            </Button>
+            <Button
+              type={groupBy === "test" ? "primary" : "default"}
+              size="small"
+              icon={<FileText size={14} />}
+              onClick={() => setGroupBy("test")}
+            >
+              Bài kiểm tra
+            </Button>
+            <Button
+              type={groupBy === "course" ? "primary" : "default"}
+              size="small"
+              icon={<BookOpen size={14} />}
+              onClick={() => setGroupBy("course")}
+            >
+              Khóa học
+            </Button>
+          </div>
+        </div>
       </Card>
 
       {/* Results Table or Grouped View */}
@@ -615,11 +616,13 @@ export default function TestResultsPage() {
               columns={columns}
               dataSource={filteredAndSortedResults}
               rowKey="id"
+              scroll={{ x: 1000 }}
               pagination={{
                 showSizeChanger: true,
                 showQuickJumper: true,
                 showTotal: (total, range) =>
                   `${range[0]}-${range[1]} của ${total} kết quả`,
+                responsive: true,
               }}
             />
           </Spin>
@@ -677,6 +680,7 @@ export default function TestResultsPage() {
                 rowKey="id"
                 pagination={false}
                 size="small"
+                scroll={{ x: 1000 }}
               />
             </Card>
           ))}

@@ -642,7 +642,9 @@ export default function TakeTestPage() {
                   ? "Chọn 1 đáp án đúng"
                   : currentQuestion.questionType === "MULTIPLE_CHOICE"
                     ? "Chọn các đáp án đúng"
-                    : `Tự luận (Tối đa ${currentQuestion.maxLength || 1000} ký tự)`}
+                    : `Tự luận (Tối đa ${
+                        currentQuestion.maxLength || 1000
+                      } ký tự)`}
               </Tag>
               <Title level={4} style={{ marginBottom: 0 }}>
                 Câu {currentQuestionIndex + 1}: {currentQuestion.content}
@@ -918,8 +920,8 @@ export default function TakeTestPage() {
               </Space>
             </Col>
             <Col span={24}>
-              <Row justify="space-between" align="middle">
-                <Col>
+              <Row justify="space-between" align="middle" gutter={[16, 16]}>
+                <Col xs={24} sm="auto">
                   <Button
                     onClick={() => {
                       if (lessonId && courseId) {
@@ -931,16 +933,19 @@ export default function TakeTestPage() {
                       }
                     }}
                     icon={<ArrowLeft size={16} />}
+                    block={true}
+                    className="w-full sm:w-auto"
                   >
                     Thoát
                   </Button>
                 </Col>
-                <Col>
-                  <Space size={12}>
+                <Col xs={24} sm="auto">
+                  <div className="flex justify-between sm:justify-end gap-3">
                     <Button
                       onClick={goPrev}
                       disabled={currentQuestionIndex === 0}
                       icon={<ArrowLeft size={16} />}
+                      className="flex-1 sm:flex-none"
                     >
                       Câu trước
                     </Button>
@@ -950,6 +955,7 @@ export default function TakeTestPage() {
                         onClick={goNext}
                         icon={<ArrowRight size={16} />}
                         iconPosition="end"
+                        className="flex-1 sm:flex-none"
                       >
                         Câu tiếp
                       </Button>
@@ -972,11 +978,12 @@ export default function TakeTestPage() {
                             "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                           border: "none",
                         }}
+                        className="flex-1 sm:flex-none"
                       >
                         Nộp bài
                       </Button>
                     )}
-                  </Space>
+                  </div>
                 </Col>
               </Row>
             </Col>

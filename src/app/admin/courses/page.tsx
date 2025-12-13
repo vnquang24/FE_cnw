@@ -370,20 +370,20 @@ export default function CoursesPage() {
 
       {/* Filters and Actions */}
       <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]} align="middle">
-          <Col flex="auto">
-            <Space>
+        <Row gutter={[16, 16]} align="middle" justify="space-between">
+          <Col xs={24} lg={18}>
+            <div className="flex flex-col sm:flex-row gap-4">
               <Input
                 placeholder="Tìm kiếm khóa học hoặc giảng viên..."
                 prefix={<Search size={14} />}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                style={{ width: 300 }}
+                className="w-full sm:w-[300px]"
               />
               <Select
                 value={filterStatus}
                 onChange={setFilterStatus}
-                style={{ width: 150 }}
+                className="w-full sm:w-[150px]"
               >
                 <Option value="ALL">Tất cả</Option>
                 <Option value="ACTIVE">Đang hoạt động</Option>
@@ -391,13 +391,15 @@ export default function CoursesPage() {
                 <Option value="COMPLETED">Hoàn thành</Option>
                 <Option value="INACTIVE">Đã hủy</Option>
               </Select>
-            </Space>
+            </div>
           </Col>
-          <Col>
+          <Col xs={24} lg={6} style={{ textAlign: "right" }}>
             <Button
               type="primary"
               icon={<Plus size={14} />}
               onClick={handleAddClick}
+              block={true} // Full width on mobile via standard ant behavior if container is small? No, using className usually.
+              className="w-full sm:w-auto"
             >
               Thêm khóa học mới
             </Button>
@@ -413,11 +415,13 @@ export default function CoursesPage() {
           columns={columns}
           dataSource={filteredCourses}
           loading={isLoading}
+          scroll={{ x: 1200 }}
           pagination={{
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} khóa học`,
+            responsive: true,
           }}
         />
       </Card>
