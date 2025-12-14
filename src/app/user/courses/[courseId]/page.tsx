@@ -45,8 +45,8 @@ const lessonStatusConfig: Record<
     icon: React.ReactNode;
   }
 > = {
-  TODO: { label: "Chưa học", status: "default", icon: <BookOpen size={14} /> },
-  DOING: { label: "Đang học", status: "info", icon: <Compass size={14} /> },
+  TODO: { label: "Chưa học", status: "error", icon: <BookOpen size={14} /> },
+  DOING: { label: "Đang học", status: "default", icon: <Compass size={14} /> },
   PASS: {
     label: "Hoàn thành",
     status: "success",

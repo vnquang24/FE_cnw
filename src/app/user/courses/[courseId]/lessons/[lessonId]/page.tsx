@@ -71,8 +71,8 @@ const lessonStatusConfig: Record<
     icon: React.ReactNode;
   }
 > = {
-  TODO: { label: "Chưa học", status: "default", icon: <BookOpen size={14} /> },
-  DOING: { label: "Đang học", status: "info", icon: <BookOpen size={14} /> },
+  TODO: { label: "Chưa học", status: "error", icon: <BookOpen size={14} /> },
+  DOING: { label: "Đang học", status: "default", icon: <BookOpen size={14} /> },
   PASS: {
     label: "Hoàn thành",
     status: "success",
@@ -218,48 +218,215 @@ export default function LessonLearningPage() {
 
   const hasOtherComponents = otherComponents.length > 0;
 
-  // Function to update lesson status to DOING when user starts
-  const handleStartLearning = async () => {
-    if (!userId || !lessonId || !courseId) return;
+  // Fetch test results for all test components in this lesson
+  const testResultArgs = useMemo(
+    () => ({
+      where: {
+        userId: userId ?? "",
+        componentId: {
+          in: testComponents.map((c) => c.id),
+        },
+      },
+      orderBy: { attemptNumber: "desc" as const },
+    }),
+    [userId, testComponents],
+  );
+
+  const { data: allTestResults } = useFindManyTestResult(testResultArgs, {
+    enabled: Boolean(userId && testComponents.length > 0),
+  });
+
+  // Function to check and update lesson status based on content
+  const checkAndUpdateLessonStatus = async () => {
+    if (!userId || !lessonId || !components) return;
 
     try {
       const currentUserLesson = userLesson?.[0];
+      const currentStatus: "TODO" | "DOING" | "PASS" | "FAIL" =
+        (currentUserLesson?.status || "TODO") as any;
+
+      console.log("=== Checking lesson status ===");
+      console.log("Current status:", currentStatus);
+      console.log("Has test components:", testComponents.length > 0);
+      console.log(
+        "Test components:",
+        testComponents.map((c) => ({ id: c.id, name: c.test?.name })),
+      );
+
+      // Nếu đã PASS rồi thì không làm gì
+      if (currentStatus === "PASS") {
+        console.log("Already PASS, no update needed");
+        return;
+      }
+
+      // Xác định trạng thái mới dựa trên nội dung bài học
+      let newStatus: "TODO" | "DOING" | "PASS" = currentStatus as any;
+      let shouldUpdate = false;
+
+      // Nếu bài học có bài kiểm tra
+      const hasTest = testComponents.length > 0;
+
+      if (hasTest) {
+        console.log("Lesson has tests, checking test results...");
+        console.log("All test results:", allTestResults);
+
+        // Group test results by componentId and get latest attempt
+        const latestResultsByComponent = new Map();
+        (allTestResults || []).forEach((result: any) => {
+          if (
+            !latestResultsByComponent.has(result.componentId) ||
+            result.attemptNumber >
+              latestResultsByComponent.get(result.componentId).attemptNumber
+          ) {
+            latestResultsByComponent.set(result.componentId, result);
+          }
+        });
+
+        console.log(
+          "Latest results by component:",
+          Array.from(latestResultsByComponent.entries()).map(
+            ([id, result]: [string, any]) => ({
+              componentId: id,
+              attemptNumber: result.attemptNumber,
+              status: result.status,
+              mark: result.mark,
+            }),
+          ),
+        );
+
+        // Check if all tests are passed
+        const allTestsPassed = testComponents.every((component) => {
+          const latestResult = latestResultsByComponent.get(component.id);
+          const isPassed = latestResult && latestResult.status === "PASSED";
+          console.log(
+            `Test ${component.test?.name} (${component.id}): ${isPassed ? "PASSED" : "NOT PASSED"}`,
+          );
+          return isPassed;
+        });
+
+        console.log("All tests passed?", allTestsPassed);
+
+        if (allTestsPassed) {
+          // Tất cả test đã pass → đánh dấu PASS
+          newStatus = "PASS";
+          shouldUpdate = true;
+          console.log("All tests passed! Will update to PASS");
+
+          // Calculate average grade from all tests
+          const grades = Array.from(latestResultsByComponent.values()).map(
+            (r: any) => r.mark || 0,
+          );
+          const avgGrade =
+            grades.reduce((sum, g) => sum + g, 0) / grades.length;
+          console.log("Average grade:", avgGrade);
+        } else if (currentStatus === "TODO") {
+          // Có test nhưng chưa pass hết → chuyển sang DOING
+          newStatus = "DOING";
+          shouldUpdate = true;
+          console.log("Has tests but not all passed, will update to DOING");
+        }
+      } else {
+        console.log("No tests in lesson");
+        // Nếu không có test, tự động đánh dấu PASS
+        if (currentStatus !== "PASS") {
+          newStatus = "PASS";
+          shouldUpdate = true;
+          console.log("No tests, will auto-complete to PASS");
+        }
+      }
+
+      console.log("Determined new lesson status:", newStatus);
+      console.log("Should update?", shouldUpdate);
+
+      // Chỉ update khi có sự thay đổi trạng thái
+      if (!shouldUpdate) {
+        console.log("No update needed");
+        return;
+      }
 
       if (!currentUserLesson) {
-        // Create new UserLesson with DOING status
+        console.log("Creating new UserLesson with status:", newStatus);
+        // Tạo mới UserLesson
         await createUserLesson.mutateAsync({
           data: {
             userId,
             lessonId,
-            courseId,
-            status: "DOING",
+            status: newStatus,
+            grade: newStatus === "PASS" ? 100 : 0,
+            completedAt:
+              newStatus === "PASS" ? new Date().toISOString() : undefined,
           },
         });
-      } else if (currentUserLesson.status === "TODO") {
-        // Update existing UserLesson to DOING
+        message.success(
+          newStatus === "PASS"
+            ? "Bài học đã được đánh dấu hoàn thành!"
+            : "Đã bắt đầu học bài!",
+        );
+      } else {
+        console.log(
+          "Updating existing UserLesson from",
+          currentStatus,
+          "to",
+          newStatus,
+        );
+        // Update UserLesson hiện có
+        const updateData: any = { status: newStatus };
+
+        if (newStatus === "PASS") {
+          // Calculate average grade if has tests
+          if (hasTest && allTestResults && allTestResults.length > 0) {
+            const latestResultsByComponent = new Map();
+            allTestResults.forEach((result: any) => {
+              if (
+                !latestResultsByComponent.has(result.componentId) ||
+                result.attemptNumber >
+                  latestResultsByComponent.get(result.componentId).attemptNumber
+              ) {
+                latestResultsByComponent.set(result.componentId, result);
+              }
+            });
+
+            const grades = Array.from(latestResultsByComponent.values()).map(
+              (r: any) => r.mark || 0,
+            );
+            const avgGrade =
+              grades.reduce((sum, g) => sum + g, 0) / grades.length;
+            updateData.grade = Math.round(avgGrade);
+          } else {
+            updateData.grade = 100;
+          }
+          updateData.completedAt = new Date().toISOString();
+        }
+
+        console.log("Update data:", updateData);
+
         await updateUserLesson.mutateAsync({
           where: { id: currentUserLesson.id },
-          data: { status: "DOING" },
+          data: updateData,
         });
+
+        if (newStatus === "PASS") {
+          message.success("Bài học đã được đánh dấu hoàn thành!");
+        }
       }
 
+      console.log("Update successful!");
       refetchUserLesson();
     } catch (error) {
       console.error("Error updating lesson status:", error);
     }
   };
 
-  // Auto-start learning when page loads (if not already completed)
+  // Auto check and update lesson status when page loads
   useEffect(() => {
-    if (userId && lessonId && courseId && userLesson !== undefined) {
-      const currentUserLesson = userLesson?.[0];
-      const status = currentUserLesson?.status || "TODO";
-
-      if (status === "TODO") {
-        handleStartLearning();
-      }
+    if (userId && lessonId && components && userLesson !== undefined) {
+      // Wait a bit for test results to load
+      const timer = setTimeout(() => {
+        checkAndUpdateLessonStatus();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [userId, lessonId, courseId, userLesson]);
+  }, [userId, lessonId, components, userLesson, allTestResults]);
 
   if (
     !lessonId ||

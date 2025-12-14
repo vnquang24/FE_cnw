@@ -35,9 +35,6 @@ import {
   useFindUniqueTest,
   useFindManyTestResult,
   useCreateTestResult,
-  useFindManyUserLesson,
-  useUpdateUserLesson,
-  useFindManyComponent,
 } from "@/generated/hooks";
 import { getUserId } from "@/lib/auth";
 import { shuffleTestContent } from "@/utils/shuffleUtils";
@@ -133,42 +130,7 @@ export default function TakeTestPage() {
     enabled: Boolean(userId && componentId),
   });
 
-  // Fetch user lesson data
-  const userLessonArgs = useMemo(
-    () => ({
-      where: {
-        userId: userId ?? "",
-        lessonId: lessonId ?? "",
-      },
-      take: 1,
-    }),
-    [userId, lessonId],
-  );
-
-  const { data: userLessons } = useFindManyUserLesson(userLessonArgs, {
-    enabled: Boolean(userId && lessonId),
-  });
-
-  // Fetch all test components in the lesson
-  const componentsArgs = useMemo(
-    () => ({
-      where: {
-        lessonId: lessonId ?? "",
-        componentType: "TEST",
-      },
-      include: {
-        test: true,
-      },
-    }),
-    [lessonId],
-  );
-
-  const { data: lessonComponents } = useFindManyComponent(componentsArgs, {
-    enabled: Boolean(lessonId),
-  });
-
   const createTestResult = useCreateTestResult();
-  const updateUserLesson = useUpdateUserLesson();
 
   // Initialize timer when test loads
   useEffect(() => {
@@ -457,92 +419,7 @@ export default function TakeTestPage() {
         data: submitData,
       });
 
-      // Auto-complete lesson if ALL tests are passed
-      if (
-        status === "PASSED" &&
-        lessonId &&
-        userId &&
-        userLessons &&
-        userLessons.length > 0 &&
-        lessonComponents
-      ) {
-        const currentUserLesson = userLessons[0];
-
-        try {
-          // Get all test component IDs in this lesson
-          const allTestComponentIds = lessonComponents.map((c) => c.id);
-
-          // Fetch test results for all tests in this lesson
-          const allTestResultsResponse = await fetch(
-            `/api/model/testResult/findMany?q=${encodeURIComponent(
-              JSON.stringify({
-                where: {
-                  userId,
-                  componentId: { in: allTestComponentIds },
-                },
-                orderBy: { attemptNumber: "desc" as const },
-              }),
-            )}`,
-          );
-
-          if (!allTestResultsResponse.ok) {
-            throw new Error("Failed to fetch test results");
-          }
-
-          const allTestResults = await allTestResultsResponse.json();
-
-          // Group results by componentId and get the latest attempt for each
-          const latestResultsByComponent = new Map();
-          allTestResults.forEach((result: any) => {
-            if (
-              !latestResultsByComponent.has(result.componentId) ||
-              result.attemptNumber >
-                latestResultsByComponent.get(result.componentId).attemptNumber
-            ) {
-              latestResultsByComponent.set(result.componentId, result);
-            }
-          });
-
-          // Check if all tests are passed
-          const allTestsPassed = allTestComponentIds.every((componentId) => {
-            const latestResult = latestResultsByComponent.get(componentId);
-            return latestResult && latestResult.status === "PASSED";
-          });
-
-          if (allTestsPassed) {
-            // Calculate average grade from all tests
-            const grades = Array.from(latestResultsByComponent.values()).map(
-              (r: any) => r.mark || 0,
-            );
-            const avgGrade =
-              grades.reduce((sum, g) => sum + g, 0) / grades.length;
-
-            // Update user lesson to PASS status
-            await updateUserLesson.mutateAsync({
-              where: { id: currentUserLesson.id },
-              data: {
-                status: "PASS",
-                completedAt: new Date().toISOString(),
-                grade: Math.round(avgGrade),
-              },
-            });
-
-            message.success(
-              "Nộp bài thành công! Bạn đã hoàn thành tất cả bài kiểm tra - Bài học đã được đánh dấu hoàn thành!",
-            );
-          } else {
-            message.success(
-              "Nộp bài thành công! Hoàn thành thêm các bài kiểm tra khác để hoàn thành bài học.",
-            );
-          }
-        } catch (lessonError) {
-          console.error("Error updating lesson status:", lessonError);
-          // Don't fail the whole operation if lesson update fails
-          message.success("Nộp bài thành công!");
-        }
-      } else {
-        message.success("Nộp bài thành công!");
-      }
+      message.success("Nộp bài thành công!");
 
       // Navigate to results page
       router.push(
