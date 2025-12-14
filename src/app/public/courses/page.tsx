@@ -18,6 +18,9 @@ import {
   Checkbox,
   Badge,
   Spin,
+  Modal,
+  Divider,
+  Descriptions,
 } from "antd";
 import {
   SearchOutlined,
@@ -25,8 +28,12 @@ import {
   ClockCircleOutlined,
   TrophyOutlined,
   BookOutlined,
+  EyeOutlined,
+  CheckCircleOutlined,
+  PlayCircleOutlined,
 } from "@ant-design/icons";
 import { useFindManyCourse } from "../../../../generated/hooks";
+import { useRouter } from "next/navigation";
 
 const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;
@@ -48,6 +55,7 @@ type CourseLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 type CourseStatus = "ACTIVE" | "INACTIVE";
 
 export default function CoursesPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLevels, setSelectedLevels] = useState<CourseLevel[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<CourseStatus[]>([
@@ -55,7 +63,9 @@ export default function CoursesPage() {
   ]); // Default show only active courses
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 9; // Better for 3-column layout
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const pageSize = 12; // Better for 4-column layout
 
   // Fetch courses from database - only active courses by default
   const {
@@ -157,6 +167,16 @@ export default function CoursesPage() {
     setCurrentPage(1);
   };
 
+  const handleViewDetails = (course: any) => {
+    setSelectedCourse(course);
+    setModalVisible(true);
+  };
+
+  const handleEnroll = (courseId: string) => {
+    setModalVisible(false);
+    router.push(`/user/courses/${courseId}`);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -181,32 +201,51 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <section className="bg-white py-6 sm:py-8 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <Title level={1} className="text-2xl sm:text-3xl md:text-4xl">
-            Tất cả khóa học
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 shadow-lg">
+        <div className="w-full px-6">
+          <Title level={1} className="text-white mb-2">
+            🎓 Khám phá khóa học
           </Title>
-          <Paragraph type="secondary" className="text-base sm:text-lg">
+          <Paragraph className="text-blue-100 text-lg mb-0">
             Khám phá {filteredCourses.length} khóa học chất lượng cao từ các
-            chuyên gia
+            chuyên gia hàng đầu
           </Paragraph>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="w-full px-6 py-8">
         <Row gutter={24}>
           {/* Filters Sidebar */}
-          <Col xs={0} lg={6}>
-            <Card className="sticky top-4">
-              <div className="flex justify-between items-center mb-4">
-                <Title level={4}>Bộ lọc</Title>
-                <Button type="link" onClick={resetFilters} size="small">
+          <Col xs={24} lg={5}>
+            <Card
+              className="sticky top-4 shadow-md"
+              styles={{
+                header: {
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  color: "white",
+                  borderRadius: "8px 8px 0 0",
+                },
+              }}
+              title={
+                <Space>
+                  <SearchOutlined />
+                  <span>Bộ lọc</span>
+                </Space>
+              }
+              extra={
+                <Button
+                  type="link"
+                  onClick={resetFilters}
+                  size="small"
+                  style={{ color: "white" }}
+                >
                   Xóa tất cả
                 </Button>
-              </div>
-
+              }
+            >
               <Space direction="vertical" className="w-full" size="large">
                 {/* Search */}
                 <div>
@@ -266,40 +305,40 @@ export default function CoursesPage() {
           </Col>
 
           {/* Main Content */}
-          <Col xs={24} lg={18}>
+          <Col xs={24} lg={19}>
             {/* Sort and View Controls */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-white p-4 rounded-lg">
-              <div className="flex items-center space-x-4">
-                <Text>
-                  Hiển thị {startIndex + 1}-
-                  {Math.min(startIndex + pageSize, filteredCourses.length)}
-                  trong {filteredCourses.length} kết quả
-                </Text>
-              </div>
+            <Card className="mb-6 shadow-sm">
+              <div className="flex justify-between items-center flex-wrap gap-4">
+                <Space>
+                  <BookOutlined className="text-blue-600" />
+                  <Text strong>
+                    Hiển thị {startIndex + 1}-
+                    {Math.min(startIndex + pageSize, filteredCourses.length)} /{" "}
+                    {filteredCourses.length} khóa học
+                  </Text>
+                </Space>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                <Text>Sắp xếp:</Text>
-                <Select
-                  value={sortBy}
-                  onChange={setSortBy}
-                  className="w-full sm:w-40"
-                >
-                  <Option value="popular">Phổ biến nhất</Option>
-                  <Option value="newest">Mới nhất</Option>
-                  <Option value="oldest">Cũ nhất</Option>
-                  <Option value="duration-high">Thời lượng dài nhất</Option>
-                  <Option value="duration-low">Thời lượng ngắn nhất</Option>
-                </Select>
-
-                <Button
-                  icon={<FilterOutlined />}
-                  className="lg:hidden w-full sm:w-auto"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  Lọc
-                </Button>
+                <Space>
+                  <Text>Sắp xếp:</Text>
+                  <Select
+                    value={sortBy}
+                    onChange={setSortBy}
+                    className="w-56"
+                    size="large"
+                  >
+                    <Option value="popular">🔥 Phổ biến nhất</Option>
+                    <Option value="newest">🆕 Mới nhất</Option>
+                    <Option value="oldest">📅 Cũ nhất</Option>
+                    <Option value="duration-high">
+                      ⏰ Thời lượng dài nhất
+                    </Option>
+                    <Option value="duration-low">
+                      ⚡ Thời lượng ngắn nhất
+                    </Option>
+                  </Select>
+                </Space>
               </div>
-            </div>
+            </Card>
 
             {/* Courses Grid */}
             {currentCourses.length > 0 ? (
@@ -320,7 +359,7 @@ export default function CoursesPage() {
                       <Card
                         hoverable
                         cover={
-                          <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 h-40 sm:h-48">
+                          <div className="relative bg-linear-to-br from-blue-50 to-indigo-100 h-48">
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center">
                                 <BookOutlined className="text-blue-600 text-2xl" />
@@ -348,66 +387,99 @@ export default function CoursesPage() {
                         ]}
                         className="h-full"
                       >
-                        <div className="space-y-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <Title
-                              level={5}
-                              className="mb-0! line-clamp-2 flex-1"
-                            >
-                              {course.title}
-                            </Title>
-                            <Tag color={levelInfo.color}>{levelInfo.label}</Tag>
-                          </div>
+                        <div className="p-4">
+                          <Title
+                            level={5}
+                            className="mb-3 line-clamp-2 min-h-[3rem]"
+                            style={{ color: "#1e40af" }}
+                          >
+                            {course.title}
+                          </Title>
 
                           {course.description && (
-                            <Text
+                            <Paragraph
                               type="secondary"
-                              className="text-sm line-clamp-2"
+                              className="text-sm line-clamp-2 mb-3"
+                              style={{ minHeight: "2.5rem" }}
                             >
                               {course.description}
-                            </Text>
+                            </Paragraph>
                           )}
 
-                          <div className="flex items-center space-x-2 text-sm">
-                            <Avatar size="small" icon={<UserOutlined />} />
-                            <Text type="secondary" className="truncate">
-                              {course.creator?.name || "Chưa cập nhật"}
-                            </Text>
-                          </div>
+                          <Divider className="my-3" />
 
-                          <div className="flex items-center text-sm text-gray-600">
-                            <ClockCircleOutlined className="mr-1" />
-                            <Text type="secondary">
-                              {Math.floor(course.duration / 60)} giờ{" "}
-                              {course.duration % 60 > 0
-                                ? `${course.duration % 60} phút`
-                                : ""}
-                            </Text>
-                          </div>
-
-                          <div className="flex items-center justify-between text-sm">
-                            <Space size={4}>
-                              <BookOutlined className="text-gray-400" />
-                              <Text type="secondary">
-                                {course.lessons?.length || 0} bài học
-                              </Text>
-                            </Space>
-                            <Space size={4}>
-                              <UserOutlined className="text-gray-400" />
-                              <Text type="secondary">
-                                {course.userCourses?.length || 0} học viên
-                              </Text>
-                            </Space>
-                          </div>
-
-                          {totalComponents > 0 && (
-                            <div className="flex items-center text-sm text-gray-600">
-                              <TrophyOutlined className="mr-1" />
-                              <Text type="secondary">
-                                {totalComponents} nội dung học
+                          <Space
+                            direction="vertical"
+                            size={8}
+                            className="w-full"
+                          >
+                            <div className="flex items-center text-sm">
+                              <Avatar
+                                size="small"
+                                icon={<UserOutlined />}
+                                className="bg-blue-500"
+                              />
+                              <Text className="ml-2 truncate flex-1">
+                                {course.creator?.name || "Chưa cập nhật"}
                               </Text>
                             </div>
-                          )}
+
+                            <div className="flex items-center justify-between text-sm">
+                              <Space size={4}>
+                                <ClockCircleOutlined className="text-orange-500" />
+                                <Text type="secondary">
+                                  {Math.floor(course.duration / 60)}h{" "}
+                                  {course.duration % 60 > 0
+                                    ? `${course.duration % 60}m`
+                                    : ""}
+                                </Text>
+                              </Space>
+                              <Space size={4}>
+                                <BookOutlined className="text-blue-500" />
+                                <Text type="secondary">
+                                  {course.lessons?.length || 0} bài
+                                </Text>
+                              </Space>
+                            </div>
+
+                            <div className="flex items-center justify-between text-sm">
+                              <Space size={4}>
+                                <UserOutlined className="text-green-500" />
+                                <Text type="secondary">
+                                  {course.userCourses?.length || 0} HV
+                                </Text>
+                              </Space>
+                              {totalComponents > 0 && (
+                                <Space size={4}>
+                                  <TrophyOutlined className="text-purple-500" />
+                                  <Text type="secondary">
+                                    {totalComponents} nội dung
+                                  </Text>
+                                </Space>
+                              )}
+                            </div>
+                          </Space>
+
+                          <Divider className="my-3" />
+
+                          <Space className="w-full" size={8}>
+                            <Button
+                              type="default"
+                              icon={<EyeOutlined />}
+                              onClick={() => handleViewDetails(course)}
+                              className="flex-1"
+                            >
+                              Chi tiết
+                            </Button>
+                            <Button
+                              type="primary"
+                              icon={<PlayCircleOutlined />}
+                              onClick={() => handleEnroll(course.id)}
+                              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 border-0"
+                            >
+                              Học ngay
+                            </Button>
+                          </Space>
                         </div>
                       </Card>
                     </Col>
@@ -415,19 +487,24 @@ export default function CoursesPage() {
                 })}
               </Row>
             ) : (
-              <Empty
-                image={<BookOutlined className="text-6xl text-gray-400" />}
-                description={
-                  <div>
-                    <Title level={3} type="secondary">
-                      Không tìm thấy khóa học
-                    </Title>
-                    <Text type="secondary">
-                      Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
-                    </Text>
-                  </div>
-                }
-              />
+              <Card className="text-center py-12">
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={
+                    <Space direction="vertical">
+                      <Title level={4} type="secondary">
+                        😔 Không tìm thấy khóa học
+                      </Title>
+                      <Text type="secondary">
+                        Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
+                      </Text>
+                      <Button type="primary" onClick={resetFilters}>
+                        Xóa bộ lọc
+                      </Button>
+                    </Space>
+                  }
+                />
+              </Card>
             )}
 
             {/* Pagination */}
@@ -441,14 +518,166 @@ export default function CoursesPage() {
                   showSizeChanger={false}
                   showQuickJumper
                   showTotal={(total, range) =>
-                    `${range[0]}-${range[1]} của ${total} khóa học`
+                    `${range[0]}-${range[1]} / ${total} khóa học`
                   }
+                  className="bg-white px-4 py-2 rounded-lg shadow-sm"
                 />
               </div>
             )}
           </Col>
         </Row>
       </div>
+
+      {/* Course Detail Modal */}
+      <Modal
+        title={
+          <Space>
+            <BookOutlined className="text-blue-600" />
+            <span>Chi tiết khóa học</span>
+          </Space>
+        }
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        width={800}
+        footer={[
+          <Button key="cancel" onClick={() => setModalVisible(false)}>
+            Đóng
+          </Button>,
+          <Button
+            key="enroll"
+            type="primary"
+            icon={<PlayCircleOutlined />}
+            onClick={() => selectedCourse && handleEnroll(selectedCourse.id)}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 border-0"
+          >
+            Bắt đầu học
+          </Button>,
+        ]}
+      >
+        {selectedCourse && (
+          <Space direction="vertical" size={16} className="w-full">
+            <div className="relative bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 h-40 rounded-lg overflow-hidden">
+              <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
+                <div className="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center">
+                  <BookOutlined className="text-blue-600 text-2xl" />
+                </div>
+              </div>
+            </div>
+
+            <Title level={3} className="mb-0">
+              {selectedCourse.title}
+            </Title>
+
+            {selectedCourse.description && (
+              <Paragraph>{selectedCourse.description}</Paragraph>
+            )}
+
+            <Descriptions bordered column={2} size="small">
+              <Descriptions.Item label="Giảng viên" span={2}>
+                <Space>
+                  <Avatar size="small" icon={<UserOutlined />} />
+                  {selectedCourse.creator?.name || "Chưa cập nhật"}
+                </Space>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Cấp độ">
+                <Tag
+                  color={
+                    levelConfig[
+                      selectedCourse.level as keyof typeof levelConfig
+                    ].color
+                  }
+                >
+                  {
+                    levelConfig[
+                      selectedCourse.level as keyof typeof levelConfig
+                    ].label
+                  }
+                </Tag>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Trạng thái">
+                <Tag
+                  color={
+                    selectedCourse.status === "ACTIVE" ? "success" : "default"
+                  }
+                >
+                  {
+                    statusConfig[
+                      selectedCourse.status as keyof typeof statusConfig
+                    ].label
+                  }
+                </Tag>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Thời lượng">
+                <Space>
+                  <ClockCircleOutlined />
+                  {Math.floor(selectedCourse.duration / 60)} giờ{" "}
+                  {selectedCourse.duration % 60 > 0
+                    ? `${selectedCourse.duration % 60} phút`
+                    : ""}
+                </Space>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Số bài học">
+                <Space>
+                  <BookOutlined />
+                  {selectedCourse.lessons?.length || 0} bài học
+                </Space>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Học viên">
+                <Space>
+                  <UserOutlined />
+                  {selectedCourse.userCourses?.length || 0} người
+                </Space>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Nội dung học">
+                <Space>
+                  <TrophyOutlined />
+                  {selectedCourse.lessons?.reduce(
+                    (sum: number, lesson: any) =>
+                      sum + (lesson.components?.length || 0),
+                    0,
+                  ) || 0}{" "}
+                  nội dung
+                </Space>
+              </Descriptions.Item>
+            </Descriptions>
+
+            {selectedCourse.lessons && selectedCourse.lessons.length > 0 && (
+              <div>
+                <Divider orientation="left">Danh sách bài học</Divider>
+                <div className="max-h-60 overflow-y-auto">
+                  <Space direction="vertical" className="w-full" size={8}>
+                    {selectedCourse.lessons.map(
+                      (lesson: any, index: number) => (
+                        <Card
+                          key={lesson.id}
+                          size="small"
+                          className="bg-gray-50"
+                        >
+                          <Space className="w-full justify-between">
+                            <Space>
+                              <Tag color="blue">Bài {index + 1}</Tag>
+                              <Text strong>{lesson.title}</Text>
+                            </Space>
+                            <Text type="secondary" className="text-xs">
+                              {lesson.components?.length || 0} nội dung
+                            </Text>
+                          </Space>
+                        </Card>
+                      ),
+                    )}
+                  </Space>
+                </div>
+              </div>
+            )}
+          </Space>
+        )}
+      </Modal>
     </div>
   );
 }
