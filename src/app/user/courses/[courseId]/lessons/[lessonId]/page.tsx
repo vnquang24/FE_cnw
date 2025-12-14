@@ -242,8 +242,11 @@ export default function LessonLearningPage() {
 
     try {
       const currentUserLesson = userLesson?.[0];
-      const currentStatus: "TODO" | "DOING" | "PASS" | "FAIL" =
-        (currentUserLesson?.status || "TODO") as any;
+      const currentStatus = (currentUserLesson?.status || "TODO") as
+        | "TODO"
+        | "DOING"
+        | "PASS"
+        | "FAIL";
 
       console.log("=== Checking lesson status ===");
       console.log("Current status:", currentStatus);
@@ -260,7 +263,7 @@ export default function LessonLearningPage() {
       }
 
       // Xác định trạng thái mới dựa trên nội dung bài học
-      let newStatus: "TODO" | "DOING" | "PASS" = currentStatus as any;
+      let newStatus: "TODO" | "DOING" | "PASS" | "FAIL" = currentStatus;
       let shouldUpdate = false;
 
       // Nếu bài học có bài kiểm tra
@@ -328,11 +331,9 @@ export default function LessonLearningPage() {
       } else {
         console.log("No tests in lesson");
         // Nếu không có test, tự động đánh dấu PASS
-        if (currentStatus !== "PASS") {
-          newStatus = "PASS";
-          shouldUpdate = true;
-          console.log("No tests, will auto-complete to PASS");
-        }
+        newStatus = "PASS";
+        shouldUpdate = true;
+        console.log("No tests, will auto-complete to PASS");
       }
 
       console.log("Determined new lesson status:", newStatus);

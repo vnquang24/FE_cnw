@@ -49,11 +49,6 @@ export default function PublicLayout({
       label: "Khóa học",
     },
     {
-      key: "/instructors",
-      icon: <TeamOutlined />,
-      label: "Giảng viên",
-    },
-    {
       key: "/about",
       icon: <InfoCircleOutlined />,
       label: "Giới thiệu",

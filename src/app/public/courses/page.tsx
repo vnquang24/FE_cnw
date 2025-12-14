@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import type { Prisma } from "@prisma/client";
 import {
   Row,
   Col,
@@ -43,10 +44,13 @@ const statusConfig = {
   INACTIVE: { label: "Đã đóng", color: "default" },
 };
 
+type CourseLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+type CourseStatus = "ACTIVE" | "INACTIVE";
+
 export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
+  const [selectedLevels, setSelectedLevels] = useState<CourseLevel[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<CourseStatus[]>([
     "ACTIVE",
   ]); // Default show only active courses
   const [sortBy, setSortBy] = useState("popular");
@@ -61,7 +65,10 @@ export default function CoursesPage() {
   } = useFindManyCourse({
     where: {
       status: {
-        in: selectedStatuses.length > 0 ? selectedStatuses : ["ACTIVE"],
+        in:
+          selectedStatuses.length > 0
+            ? (selectedStatuses as any)
+            : (["ACTIVE"] as any),
       },
     },
     include: {
@@ -79,7 +86,7 @@ export default function CoursesPage() {
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "desc" as const },
   });
 
   // Filter và sort logic
@@ -133,12 +140,12 @@ export default function CoursesPage() {
     startIndex + pageSize,
   );
 
-  const handleLevelChange = (levels: string[]) => {
+  const handleLevelChange = (levels: CourseLevel[]) => {
     setSelectedLevels(levels);
     setCurrentPage(1);
   };
 
-  const handleStatusChange = (statuses: string[]) => {
+  const handleStatusChange = (statuses: CourseStatus[]) => {
     setSelectedStatuses(statuses);
     setCurrentPage(1);
   };
@@ -302,11 +309,11 @@ export default function CoursesPage() {
                     levelConfig[course.level as keyof typeof levelConfig];
                   const statusInfo =
                     statusConfig[course.status as keyof typeof statusConfig];
-                  const totalComponents =
-                    course.lessons?.reduce(
-                      (sum, lesson) => sum + (lesson.components?.length || 0),
-                      0,
-                    ) || 0;
+                  const totalComponents = (course.lessons?.reduce(
+                    (sum: number, lesson: any) =>
+                      sum + (lesson.components?.length || 0),
+                    0,
+                  ) || 0) as number;
 
                   return (
                     <Col xs={24} sm={12} lg={8} key={course.id}>
@@ -345,7 +352,7 @@ export default function CoursesPage() {
                           <div className="flex items-start justify-between gap-2">
                             <Title
                               level={5}
-                              className="!mb-0 line-clamp-2 flex-1"
+                              className="mb-0! line-clamp-2 flex-1"
                             >
                               {course.title}
                             </Title>
