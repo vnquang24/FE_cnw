@@ -201,9 +201,9 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 shadow-lg">
+      <section className="bg-linear-to-r from-blue-600 to-indigo-700 text-white py-12 shadow-lg">
         <div className="w-full px-6">
           <Title level={1} className="text-white mb-2">
             🎓 Khám phá khóa học
@@ -390,7 +390,7 @@ export default function CoursesPage() {
                         <div className="p-4">
                           <Title
                             level={5}
-                            className="mb-3 line-clamp-2 min-h-[3rem]"
+                            className="mb-3 line-clamp-2 min-h-12"
                             style={{ color: "#1e40af" }}
                           >
                             {course.title}
@@ -475,7 +475,7 @@ export default function CoursesPage() {
                               type="primary"
                               icon={<PlayCircleOutlined />}
                               onClick={() => handleEnroll(course.id)}
-                              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 border-0"
+                              className="flex-1 bg-linear-to-r from-blue-500 to-purple-600 border-0"
                             >
                               Học ngay
                             </Button>
@@ -548,7 +548,7 @@ export default function CoursesPage() {
             type="primary"
             icon={<PlayCircleOutlined />}
             onClick={() => selectedCourse && handleEnroll(selectedCourse.id)}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 border-0"
+            className="bg-linear-to-r from-blue-500 to-purple-600 border-0"
           >
             Bắt đầu học
           </Button>,
@@ -556,7 +556,7 @@ export default function CoursesPage() {
       >
         {selectedCourse && (
           <Space direction="vertical" size={16} className="w-full">
-            <div className="relative bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 h-40 rounded-lg overflow-hidden">
+            <div className="relative bg-linear-to-br from-blue-500 via-purple-500 to-pink-500 h-40 rounded-lg overflow-hidden">
               <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
                 <div className="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center">
                   <BookOutlined className="text-blue-600 text-2xl" />
