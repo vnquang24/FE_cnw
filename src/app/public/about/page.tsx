@@ -20,90 +20,76 @@ import {
   GlobalOutlined,
   HeartOutlined,
   CheckCircleOutlined,
+  PlayCircleOutlined,
+  FileTextOutlined,
+  CommentOutlined,
+  SafetyOutlined,
 } from "@ant-design/icons";
 
 const { Title, Paragraph, Text } = Typography;
 
 const stats = [
-  { title: "Học viên", value: 50000, suffix: "+", color: "#1890ff" },
-  { title: "Khóa học", value: 500, suffix: "+", color: "#52c41a" },
-  { title: "Giảng viên", value: 100, suffix: "+", color: "#f5222d" },
-  { title: "Quốc gia", value: 20, suffix: "+", color: "#fa8c16" },
+  { title: "Khóa học", value: 100, suffix: "+", color: "#1890ff" },
+  { title: "Bài học", value: 500, suffix: "+", color: "#52c41a" },
+  { title: "Video bài giảng", value: 300, suffix: "+", color: "#f5222d" },
+  { title: "Bài kiểm tra", value: 200, suffix: "+", color: "#fa8c16" },
 ];
 
 const features = [
   {
-    icon: <BookOutlined className="text-3xl text-blue-500" />,
-    title: "Khóa học chất lượng",
+    icon: <PlayCircleOutlined className="text-3xl text-blue-500" />,
+    title: "Học qua video tương tác",
     description:
-      "Nội dung được thiết kế bởi các chuyên gia có kinh nghiệm thực tế phong phú trong ngành.",
+      "Video bài giảng chất lượng cao với khả năng bình luận theo dòng thời gian, giúp tương tác trực tiếp tại từng phần kiến thức.",
   },
   {
-    icon: <TeamOutlined className="text-3xl text-green-500" />,
-    title: "Cộng đồng học tập",
+    icon: <BookOutlined className="text-3xl text-green-500" />,
+    title: "Từ vựng & Nội dung đa dạng",
     description:
-      "Tham gia cộng đồng học viên năng động, hỗ trợ lẫn nhau trong quá trình học tập.",
+      "Hệ thống từ vựng phân loại theo loại từ, kết hợp đoạn văn bản và video để học toàn diện.",
+  },
+  {
+    icon: <FileTextOutlined className="text-3xl text-purple-500" />,
+    title: "Kiểm tra & Đánh giá tự động",
+    description:
+      "Hệ thống bài kiểm tra đa dạng (trắc nghiệm, tự luận), tự động chấm điểm và theo dõi số lần làm bài.",
+  },
+  {
+    icon: <CommentOutlined className="text-3xl text-orange-500" />,
+    title: "Ghi chú cá nhân",
+    description:
+      "Tạo ghi chú riêng cho từng bài học, tag và tổ chức kiến thức theo cách của bạn.",
   },
   {
     icon: <TrophyOutlined className="text-3xl text-yellow-500" />,
-    title: "Chứng chỉ uy tín",
+    title: "Theo dõi tiến độ",
     description:
-      "Nhận chứng chỉ hoàn thành khóa học được công nhận bởi các doanh nghiệp hàng đầu.",
+      "Hệ thống theo dõi chi tiết tiến độ học tập, điểm số, và trạng thái hoàn thành từng bài học.",
   },
   {
-    icon: <GlobalOutlined className="text-3xl text-purple-500" />,
-    title: "Học mọi lúc, mọi nơi",
+    icon: <SafetyOutlined className="text-3xl text-red-500" />,
+    title: "Quản lý thiết bị an toàn",
     description:
-      "Nền tảng học trực tuyến cho phép bạn học tập linh hoạt theo thời gian biểu của mình.",
-  },
-];
-
-const team = [
-  {
-    name: "Nguyễn Văn A",
-    role: "CEO & Founder",
-    avatar: "https://via.placeholder.com/80x80/1890ff/ffffff?text=CEO",
-    description: "Hơn 15 năm kinh nghiệm trong lĩnh vực giáo dục và công nghệ.",
-  },
-  {
-    name: "Trần Thị B",
-    role: "CTO",
-    avatar: "https://via.placeholder.com/80x80/52c41a/ffffff?text=CTO",
-    description:
-      "Chuyên gia công nghệ với kinh nghiệm phát triển sản phẩm EdTech.",
-  },
-  {
-    name: "Lê Văn C",
-    role: "Head of Education",
-    avatar: "https://via.placeholder.com/80x80/f5222d/ffffff?text=EDU",
-    description:
-      "Giám đốc giáo dục với nhiều năm kinh nghiệm trong thiết kế chương trình.",
-  },
-  {
-    name: "Hoàng Thị D",
-    role: "Head of Marketing",
-    avatar: "https://via.placeholder.com/80x80/fa8c16/ffffff?text=MKT",
-    description:
-      "Chuyên gia marketing với kinh nghiệm xây dựng thương hiệu giáo dục.",
+      "Quản lý các thiết bị đăng nhập, bảo mật tài khoản với refresh token và giới hạn thiết bị truy cập.",
   },
 ];
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gray-50 ">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 sm:py-16 md:py-20">
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-12 sm:py-16 md:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <Title
             level={1}
             className="!text-white !mb-6 text-2xl sm:text-3xl md:text-4xl"
           >
-            Về EduSystem
+            Về LearnHub
           </Title>
           <Paragraph className="text-base sm:text-lg md:text-xl text-blue-100 leading-relaxed">
-            Chúng tôi tin rằng giáo dục là chìa khóa mở ra tương lai. EduSystem
-            được thành lập với sứ mệnh democratize education - mang giáo dục
-            chất lượng cao đến với mọi người, ở mọi nơi, vào mọi lúc.
+            Nền tảng học trực tuyến hiện đại, tích hợp video tương tác, bài kiểm
+            tra tự động và hệ thống quản lý học tập toàn diện. Học mọi lúc, mọi
+            nơi với công nghệ tiên tiến.
           </Paragraph>
         </div>
       </section>
@@ -111,6 +97,14 @@ export default function AboutPage() {
       {/* Stats Section */}
       <section className="py-12 sm:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8">
+            <Title level={2} className="text-2xl sm:text-3xl !mb-2">
+              Hệ thống của chúng tôi
+            </Title>
+            <Paragraph type="secondary" className="text-base sm:text-lg">
+              Dữ liệu nội dung học tập phong phú và đa dạng
+            </Paragraph>
+          </div>
           <Row gutter={[32, 32]}>
             {stats.map((stat, index) => (
               <Col xs={12} md={6} key={index}>
@@ -146,9 +140,10 @@ export default function AboutPage() {
                   Tầm nhìn
                 </Title>
                 <Paragraph className="text-base sm:text-lg leading-relaxed">
-                  Trở thành nền tảng giáo dục trực tuyến hàng đầu Việt Nam, nơi
-                  mọi người có thể tiếp cận kiến thức chất lượng cao và phát
-                  triển kỹ năng cần thiết cho thế kỷ 21.
+                  Xây dựng nền tảng học tập thông minh với công nghệ hiện đại,
+                  giúp người học tiếp thu kiến thức hiệu quả thông qua video
+                  tương tác, bài kiểm tra tự động và hệ thống theo dõi tiến độ
+                  chi tiết.
                 </Paragraph>
               </div>
 
@@ -161,93 +156,104 @@ export default function AboutPage() {
                   Sứ mệnh
                 </Title>
                 <Paragraph className="text-base sm:text-lg leading-relaxed">
-                  Chúng tôi cam kết mang đến trải nghiệm học tập tuyệt vời thông
-                  qua:
+                  Cung cấp trải nghiệm học tập toàn diện với:
                 </Paragraph>
                 <ul className="list-none space-y-2 mt-4">
                   <li className="flex items-start">
                     <CheckCircleOutlined className="text-green-500 mr-2 mt-1" />
                     <span>
-                      Nội dung học tập chất lượng cao và cập nhật liên tục
+                      Video bài giảng chất lượng cao với tính năng bình luận
+                      theo timeline
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircleOutlined className="text-green-500 mr-2 mt-1" />
-                    <span>Phương pháp giảng dạy hiện đại và tương tác</span>
+                    <span>
+                      Hệ thống bài kiểm tra đa dạng với chấm điểm tự động
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircleOutlined className="text-green-500 mr-2 mt-1" />
-                    <span>Hỗ trợ học viên 24/7 trong suốt quá trình học</span>
+                    <span>
+                      Theo dõi tiến độ học tập chi tiết cho từng bài học
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircleOutlined className="text-green-500 mr-2 mt-1" />
-                    <span>Kết nối học viên với cơ hội việc làm thực tế</span>
+                    <span>
+                      Bảo mật tài khoản với quản lý thiết bị thông minh
+                    </span>
                   </li>
                 </ul>
               </div>
             </Col>
 
             <Col xs={24} lg={12}>
-              <Card className="h-full bg-gradient-to-br from-blue-50 to-purple-50">
-                <Title level={3}>Hành trình phát triển</Title>
+              <Card className="h-full bg-gradient-to-br from-blue-50 to-indigo-50">
+                <Title level={3}>Tính năng nổi bật</Title>
                 <Timeline
                   items={[
                     {
-                      dot: <RocketOutlined className="text-blue-500" />,
+                      dot: <PlayCircleOutlined className="text-blue-500" />,
                       children: (
                         <div>
-                          <Text strong>2020 - Khởi đầu</Text>
+                          <Text strong>Video Streaming</Text>
                           <br />
                           <Text type="secondary">
-                            EduSystem ra đời với 10 khóa học đầu tiên
+                            Hệ thống video HLS chất lượng cao với thumbnail và
+                            độ phân giải tối ưu
                           </Text>
                         </div>
                       ),
                     },
                     {
-                      dot: <TrophyOutlined className="text-yellow-500" />,
+                      dot: <FileTextOutlined className="text-green-500" />,
                       children: (
                         <div>
-                          <Text strong>2021 - Phát triển</Text>
+                          <Text strong>Bài kiểm tra thông minh</Text>
                           <br />
                           <Text type="secondary">
-                            Đạt mốc 10,000 học viên và 100 khóa học
+                            Hỗ trợ trắc nghiệm, tự luận, xáo trộn câu hỏi/đáp án
+                            và giới hạn số lần làm
                           </Text>
                         </div>
                       ),
                     },
                     {
-                      dot: <StarOutlined className="text-green-500" />,
+                      dot: <CommentOutlined className="text-orange-500" />,
                       children: (
                         <div>
-                          <Text strong>2022 - Mở rộng</Text>
+                          <Text strong>Ghi chú & Bình luận</Text>
                           <br />
                           <Text type="secondary">
-                            Ra mắt ứng dụng mobile và hệ thống chứng chỉ
+                            Ghi chú cá nhân theo bài học và bình luận video theo
+                            dòng thời gian
                           </Text>
                         </div>
                       ),
                     },
                     {
-                      dot: <GlobalOutlined className="text-purple-500" />,
+                      dot: <TrophyOutlined className="text-purple-500" />,
                       children: (
                         <div>
-                          <Text strong>2023 - Quốc tế hóa</Text>
+                          <Text strong>Theo dõi tiến độ</Text>
                           <br />
                           <Text type="secondary">
-                            Mở rộng ra các quốc gia trong khu vực
+                            Quản lý trạng thái học tập (TODO, DOING, PASS, FAIL)
+                            và điểm số chi tiết
                           </Text>
                         </div>
                       ),
                     },
                     {
-                      dot: <HeartOutlined className="text-red-500" />,
+                      dot: <SafetyOutlined className="text-red-500" />,
                       children: (
                         <div>
-                          <Text strong>2024 - Hiện tại</Text>
+                          <Text strong>Bảo mật nâng cao</Text>
                           <br />
                           <Text type="secondary">
-                            50,000+ học viên và 500+ khóa học chất lượng cao
+                            Quản lý thiết bị đăng nhập, refresh token và phát
+                            hiện đăng nhập bất thường
                           </Text>
                         </div>
                       ),
@@ -265,20 +271,19 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <Title level={2} className="text-2xl sm:text-3xl">
-              Tại sao chọn EduSystem?
+              Tính năng hệ thống
             </Title>
             <Paragraph
               type="secondary"
               className="text-base sm:text-lg max-w-2xl mx-auto"
             >
-              Chúng tôi không chỉ cung cấp khóa học, mà còn tạo ra một hệ sinh
-              thái học tập toàn diện cho sự phát triển của bạn
+              Nền tảng học trực tuyến toàn diện với công nghệ hiện đại
             </Paragraph>
           </div>
 
-          <Row gutter={[32, 32]}>
+          <Row gutter={[24, 24]}>
             {features.map((feature, index) => (
-              <Col xs={24} md={12} key={index}>
+              <Col xs={24} md={12} lg={8} key={index}>
                 <Card className="h-full text-center hover:shadow-lg transition-shadow">
                   <div className="mb-4">{feature.icon}</div>
                   <Title level={4}>{feature.title}</Title>
@@ -290,62 +295,219 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team */}
-      <section className="py-12 sm:py-16">
+      {/* User Roles */}
+      <section className="py-12 sm:py-16 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <Title level={2} className="text-2xl sm:text-3xl">
-              Đội ngũ lãnh đạo
+              Dành cho ai?
             </Title>
             <Paragraph type="secondary" className="text-base sm:text-lg">
-              Những con người đam mê và tâm huyết đằng sau EduSystem
+              Hệ thống phù hợp cho cả người học và quản trị viên
             </Paragraph>
           </div>
 
-          <Row gutter={[32, 32]}>
-            {team.map((member, index) => (
-              <Col xs={24} sm={12} lg={6} key={index}>
-                <Card className="text-center h-full">
-                  <Avatar size={80} src={member.avatar} className="mb-4" />
-                  <Title level={4} className="!mb-2">
-                    {member.name}
-                  </Title>
-                  <Text strong className="text-blue-500 block mb-3">
-                    {member.role}
-                  </Text>
-                  <Paragraph type="secondary" className="text-sm">
-                    {member.description}
-                  </Paragraph>
-                </Card>
-              </Col>
-            ))}
+          <Row gutter={[48, 48]}>
+            <Col xs={24} lg={12}>
+              <Card className="h-full hover:shadow-lg transition-shadow">
+                <Space direction="vertical" size="large" className="w-full">
+                  <div className="flex items-center gap-4">
+                    <Avatar
+                      size={64}
+                      style={{ backgroundColor: "#1890ff" }}
+                      icon={<TeamOutlined />}
+                    />
+                    <div>
+                      <Title level={3} className="!mb-1">
+                        Học viên
+                      </Title>
+                      <Text type="secondary">Trải nghiệm học tập hiện đại</Text>
+                    </div>
+                  </div>
+                  <ul className="list-none space-y-3 ml-0 pl-0">
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Đăng ký và học các khóa học đa dạng</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Xem video bài giảng và bình luận tương tác</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Làm bài kiểm tra và nhận kết quả tự động</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Theo dõi tiến độ học tập chi tiết</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Tạo ghi chú cá nhân cho mỗi bài học</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Quản lý hồ sơ và thiết bị đăng nhập</span>
+                    </li>
+                  </ul>
+                </Space>
+              </Card>
+            </Col>
+
+            <Col xs={24} lg={12}>
+              <Card className="h-full hover:shadow-lg transition-shadow">
+                <Space direction="vertical" size="large" className="w-full">
+                  <div className="flex items-center gap-4">
+                    <Avatar
+                      size={64}
+                      style={{ backgroundColor: "#52c41a" }}
+                      icon={<StarOutlined />}
+                    />
+                    <div>
+                      <Title level={3} className="!mb-1">
+                        Quản trị viên
+                      </Title>
+                      <Text type="secondary">Quản lý hệ thống toàn diện</Text>
+                    </div>
+                  </div>
+                  <ul className="list-none space-y-3 ml-0 pl-0">
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Tạo và quản lý khóa học, bài học</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Phê duyệt đăng ký khóa học của học viên</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Tạo bài kiểm tra và câu hỏi đa dạng</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Chấm điểm bài tự luận và cung cấp phản hồi</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Quản lý người dùng và phân quyền</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircleOutlined className="text-green-500 mt-1" />
+                      <span>Theo dõi kết quả và tiến độ học viên</span>
+                    </li>
+                  </ul>
+                </Space>
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      </section>
+
+      {/* Technology Stack */}
+      <section className="py-12 sm:py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <Title level={2} className="text-2xl sm:text-3xl">
+              Công nghệ sử dụng
+            </Title>
+            <Paragraph type="secondary" className="text-base sm:text-lg">
+              Xây dựng trên nền tảng công nghệ hiện đại
+            </Paragraph>
+          </div>
+
+          <Row gutter={[24, 24]}>
+            <Col xs={24} md={12}>
+              <Card>
+                <Title level={4}>
+                  <GlobalOutlined className="mr-2 text-blue-500" />
+                  Frontend
+                </Title>
+                <div className="space-y-2">
+                  <div>• Next.js 15 với App Router</div>
+                  <div>• React 19 với TypeScript</div>
+                  <div>• Ant Design UI Components</div>
+                  <div>• TailwindCSS cho styling</div>
+                  <div>• TanStack Query cho data fetching</div>
+                </div>
+              </Card>
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Card>
+                <Title level={4}>
+                  <RocketOutlined className="mr-2 text-green-500" />
+                  Backend
+                </Title>
+                <div className="space-y-2">
+                  <div>• NestJS framework</div>
+                  <div>• Prisma ORM với PostgreSQL</div>
+                  <div>• JWT Authentication</div>
+                  <div>• MinIO cho lưu trữ file</div>
+                  <div>• Redis cho caching</div>
+                </div>
+              </Card>
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Card>
+                <Title level={4}>
+                  <PlayCircleOutlined className="mr-2 text-purple-500" />
+                  Video Streaming
+                </Title>
+                <div className="space-y-2">
+                  <div>• HLS (HTTP Live Streaming)</div>
+                  <div>• Adaptive bitrate streaming</div>
+                  <div>• Video thumbnail generation</div>
+                  <div>• Bình luận theo timeline</div>
+                </div>
+              </Card>
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Card>
+                <Title level={4}>
+                  <SafetyOutlined className="mr-2 text-red-500" />
+                  Bảo mật
+                </Title>
+                <div className="space-y-2">
+                  <div>• JWT + Refresh Token</div>
+                  <div>• Quản lý thiết bị đăng nhập</div>
+                  <div>• Rate limiting</div>
+                  <div>• Role-based access control</div>
+                </div>
+              </Card>
+            </Col>
           </Row>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-12 sm:py-16 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+      <section className="py-12 sm:py-16 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
           <Title level={2} className="!text-white !mb-4 text-2xl sm:text-3xl">
-            Sẵn sàng bắt đầu hành trình học tập?
+            Bắt đầu hành trình học tập ngay hôm nay
           </Title>
           <Paragraph className="text-base sm:text-lg md:text-xl text-blue-100 mb-8">
-            Tham gia cùng hàng nghìn học viên đang phát triển kỹ năng và xây
-            dựng sự nghiệp
+            Trải nghiệm nền tảng học trực tuyến hiện đại với video tương tác,
+            bài kiểm tra thông minh và theo dõi tiến độ chi tiết
           </Paragraph>
           <Space size="large" className="flex-wrap justify-center">
             <Button
               type="primary"
               size="large"
+              href="/public/courses"
               className="bg-white text-blue-600 border-0 hover:bg-blue-50"
+              icon={<BookOutlined />}
             >
               Khám phá khóa học
             </Button>
             <Button
               size="large"
+              href="/register"
               className="border-white text-white hover:bg-white hover:text-blue-600"
+              icon={<RocketOutlined />}
             >
-              Liên hệ chúng tôi
+              Đăng ký ngay
             </Button>
           </Space>
         </div>

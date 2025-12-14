@@ -201,34 +201,13 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
-      {/* Header */}
-      <section className="bg-linear-to-r from-blue-600 to-indigo-700 text-white py-12 shadow-lg">
-        <div className="w-full px-6">
-          <Title level={1} className="text-white mb-2">
-            🎓 Khám phá khóa học
-          </Title>
-          <Paragraph className="text-blue-100 text-lg mb-0">
-            Khám phá {filteredCourses.length} khóa học chất lượng cao từ các
-            chuyên gia hàng đầu
-          </Paragraph>
-        </div>
-      </section>
-
-      <div className="w-full px-6 py-8">
-        <Row gutter={24}>
+    <div className="min-h-screen bg-gray-50">
+      <div className="w-full px-4 sm:px-6 py-6 sm:py-8">
+        <Row gutter={[16, 24]}>
           {/* Filters Sidebar */}
-          <Col xs={24} lg={5}>
+          <Col xs={24} lg={6}>
             <Card
-              className="sticky top-4 shadow-md"
-              styles={{
-                header: {
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  color: "white",
-                  borderRadius: "8px 8px 0 0",
-                },
-              }}
+              className="shadow-sm mb-6 lg:mb-0 lg:sticky lg:top-4"
               title={
                 <Space>
                   <SearchOutlined />
@@ -236,12 +215,7 @@ export default function CoursesPage() {
                 </Space>
               }
               extra={
-                <Button
-                  type="link"
-                  onClick={resetFilters}
-                  size="small"
-                  style={{ color: "white" }}
-                >
+                <Button type="link" onClick={resetFilters} size="small">
                   Xóa tất cả
                 </Button>
               }
@@ -305,39 +279,38 @@ export default function CoursesPage() {
           </Col>
 
           {/* Main Content */}
-          <Col xs={24} lg={19}>
+          <Col xs={24} lg={18}>
             {/* Sort and View Controls */}
-            <Card className="mb-6 shadow-sm">
-              <div className="flex justify-between items-center flex-wrap gap-4">
-                <Space>
-                  <BookOutlined className="text-blue-600" />
-                  <Text strong>
-                    Hiển thị {startIndex + 1}-
-                    {Math.min(startIndex + pageSize, filteredCourses.length)} /{" "}
-                    {filteredCourses.length} khóa học
-                  </Text>
-                </Space>
+            <Card className="mb-6 shadow-sm ">
+              <Row gutter={[16, 16]} align="middle" justify="space-between">
+                <Col xs={24} sm={12}>
+                  <Space>
+                    <BookOutlined className="text-blue-600" />
+                    <Text strong className="text-sm sm:text-base">
+                      {startIndex + 1}-
+                      {Math.min(startIndex + pageSize, filteredCourses.length)}{" "}
+                      / {filteredCourses.length}
+                    </Text>
+                  </Space>
+                </Col>
 
-                <Space>
-                  <Text>Sắp xếp:</Text>
-                  <Select
-                    value={sortBy}
-                    onChange={setSortBy}
-                    className="w-56"
-                    size="large"
-                  >
-                    <Option value="popular">🔥 Phổ biến nhất</Option>
-                    <Option value="newest">🆕 Mới nhất</Option>
-                    <Option value="oldest">📅 Cũ nhất</Option>
-                    <Option value="duration-high">
-                      ⏰ Thời lượng dài nhất
-                    </Option>
-                    <Option value="duration-low">
-                      ⚡ Thời lượng ngắn nhất
-                    </Option>
-                  </Select>
-                </Space>
-              </div>
+                <Col xs={24} sm={12}>
+                  <Space className="w-full sm:w-auto ">
+                    <Text className="hidden sm:inline">Sắp xếp:</Text>
+                    <Select
+                      value={sortBy}
+                      onChange={setSortBy}
+                      className="w-full sm:w-52"
+                    >
+                      <Option value="popular">Phổ biến nhất</Option>
+                      <Option value="newest">Mới nhất</Option>
+                      <Option value="oldest">Cũ nhất</Option>
+                      <Option value="duration-high">Thời lượng dài</Option>
+                      <Option value="duration-low">Thời lượng ngắn</Option>
+                    </Select>
+                  </Space>
+                </Col>
+              </Row>
             </Card>
 
             {/* Courses Grid */}
@@ -358,40 +331,27 @@ export default function CoursesPage() {
                     <Col xs={24} sm={12} lg={8} key={course.id}>
                       <Card
                         hoverable
+                        className="h-full flex flex-col"
                         cover={
-                          <div className="relative bg-linear-to-br from-blue-50 to-indigo-100 h-48">
+                          <div className="relative bg-blue-50 h-40 sm:h-48">
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center">
-                                <BookOutlined className="text-blue-600 text-2xl" />
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full shadow-md flex items-center justify-center">
+                                <BookOutlined className="text-blue-600 text-xl sm:text-2xl" />
                               </div>
                             </div>
                             {course.status === "ACTIVE" && (
                               <Badge.Ribbon
                                 text={statusInfo.label}
                                 color="green"
-                              >
-                                <div />
-                              </Badge.Ribbon>
+                              />
                             )}
                           </div>
                         }
-                        actions={[
-                          <Button
-                            type="primary"
-                            block
-                            key="enroll"
-                            href={`/user/courses/${course.id}`}
-                          >
-                            Xem chi tiết
-                          </Button>,
-                        ]}
-                        className="h-full"
                       >
-                        <div className="p-4">
+                        <div className="flex flex-col h-full">
                           <Title
                             level={5}
-                            className="mb-3 line-clamp-2 min-h-12"
-                            style={{ color: "#1e40af" }}
+                            className="!mb-2 line-clamp-2 text-base sm:text-lg"
                           >
                             {course.title}
                           </Title>
@@ -399,8 +359,7 @@ export default function CoursesPage() {
                           {course.description && (
                             <Paragraph
                               type="secondary"
-                              className="text-sm line-clamp-2 mb-3"
-                              style={{ minHeight: "2.5rem" }}
+                              className="text-xs sm:text-sm line-clamp-2 mb-3"
                             >
                               {course.description}
                             </Paragraph>
@@ -413,73 +372,79 @@ export default function CoursesPage() {
                             size={8}
                             className="w-full"
                           >
-                            <div className="flex items-center text-sm">
-                              <Avatar
-                                size="small"
-                                icon={<UserOutlined />}
-                                className="bg-blue-500"
-                              />
-                              <Text className="ml-2 truncate flex-1">
+                            <div className="flex items-center text-xs sm:text-sm">
+                              <Avatar size="small" icon={<UserOutlined />} />
+                              <Text className="ml-2 truncate flex-1 text-xs sm:text-sm">
                                 {course.creator?.name || "Chưa cập nhật"}
                               </Text>
                             </div>
 
-                            <div className="flex items-center justify-between text-sm">
-                              <Space size={4}>
-                                <ClockCircleOutlined className="text-orange-500" />
-                                <Text type="secondary">
-                                  {Math.floor(course.duration / 60)}h{" "}
-                                  {course.duration % 60 > 0
-                                    ? `${course.duration % 60}m`
-                                    : ""}
-                                </Text>
-                              </Space>
-                              <Space size={4}>
-                                <BookOutlined className="text-blue-500" />
-                                <Text type="secondary">
-                                  {course.lessons?.length || 0} bài
-                                </Text>
-                              </Space>
-                            </div>
-
-                            <div className="flex items-center justify-between text-sm">
-                              <Space size={4}>
-                                <UserOutlined className="text-green-500" />
-                                <Text type="secondary">
-                                  {course.userCourses?.length || 0} HV
-                                </Text>
-                              </Space>
-                              {totalComponents > 0 && (
+                            <Row gutter={[8, 8]}>
+                              <Col span={12}>
                                 <Space size={4}>
-                                  <TrophyOutlined className="text-purple-500" />
-                                  <Text type="secondary">
-                                    {totalComponents} nội dung
+                                  <ClockCircleOutlined className="text-orange-500" />
+                                  <Text type="secondary" className="text-xs">
+                                    {Math.floor(course.duration / 60)}h{" "}
+                                    {course.duration % 60 > 0
+                                      ? `${course.duration % 60}m`
+                                      : ""}
                                   </Text>
                                 </Space>
+                              </Col>
+                              <Col span={12}>
+                                <Space size={4}>
+                                  <BookOutlined className="text-blue-500" />
+                                  <Text type="secondary" className="text-xs">
+                                    {course.lessons?.length || 0} bài
+                                  </Text>
+                                </Space>
+                              </Col>
+                              <Col span={12}>
+                                <Space size={4}>
+                                  <UserOutlined className="text-green-500" />
+                                  <Text type="secondary" className="text-xs">
+                                    {course.userCourses?.length || 0} HV
+                                  </Text>
+                                </Space>
+                              </Col>
+                              {totalComponents > 0 && (
+                                <Col span={12}>
+                                  <Space size={4}>
+                                    <TrophyOutlined className="text-purple-500" />
+                                    <Text type="secondary" className="text-xs">
+                                      {totalComponents} nội dung
+                                    </Text>
+                                  </Space>
+                                </Col>
                               )}
-                            </div>
+                            </Row>
                           </Space>
 
                           <Divider className="my-3" />
 
-                          <Space className="w-full" size={8}>
-                            <Button
-                              type="default"
-                              icon={<EyeOutlined />}
-                              onClick={() => handleViewDetails(course)}
-                              className="flex-1"
-                            >
-                              Chi tiết
-                            </Button>
-                            <Button
-                              type="primary"
-                              icon={<PlayCircleOutlined />}
-                              onClick={() => handleEnroll(course.id)}
-                              className="flex-1 bg-linear-to-r from-blue-500 to-purple-600 border-0"
-                            >
-                              Học ngay
-                            </Button>
-                          </Space>
+                          <Row gutter={8}>
+                            <Col span={12}>
+                              <Button
+                                block
+                                icon={<EyeOutlined />}
+                                onClick={() => handleViewDetails(course)}
+                                size="small"
+                              >
+                                Chi tiết
+                              </Button>
+                            </Col>
+                            <Col span={12}>
+                              <Button
+                                block
+                                type="primary"
+                                icon={<PlayCircleOutlined />}
+                                onClick={() => handleEnroll(course.id)}
+                                size="small"
+                              >
+                                Học ngay
+                              </Button>
+                            </Col>
+                          </Row>
                         </div>
                       </Card>
                     </Col>
@@ -487,13 +452,13 @@ export default function CoursesPage() {
                 })}
               </Row>
             ) : (
-              <Card className="text-center py-12">
+              <Card className="text-center py-8 sm:py-12">
                 <Empty
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   description={
-                    <Space direction="vertical">
-                      <Title level={4} type="secondary">
-                        😔 Không tìm thấy khóa học
+                    <Space direction="vertical" size="middle">
+                      <Title level={4} type="secondary" className="!mb-0">
+                        Không tìm thấy khóa học
                       </Title>
                       <Text type="secondary">
                         Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
@@ -509,18 +474,18 @@ export default function CoursesPage() {
 
             {/* Pagination */}
             {filteredCourses.length > pageSize && (
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-6 sm:mt-8">
                 <Pagination
                   current={currentPage}
                   total={filteredCourses.length}
                   pageSize={pageSize}
                   onChange={setCurrentPage}
                   showSizeChanger={false}
-                  showQuickJumper
+                  showQuickJumper={false}
                   showTotal={(total, range) =>
-                    `${range[0]}-${range[1]} / ${total} khóa học`
+                    `${range[0]}-${range[1]} / ${total}`
                   }
-                  className="bg-white px-4 py-2 rounded-lg shadow-sm"
+                  responsive
                 />
               </div>
             )}
@@ -548,7 +513,6 @@ export default function CoursesPage() {
             type="primary"
             icon={<PlayCircleOutlined />}
             onClick={() => selectedCourse && handleEnroll(selectedCourse.id)}
-            className="bg-linear-to-r from-blue-500 to-purple-600 border-0"
           >
             Bắt đầu học
           </Button>,
@@ -556,10 +520,10 @@ export default function CoursesPage() {
       >
         {selectedCourse && (
           <Space direction="vertical" size={16} className="w-full">
-            <div className="relative bg-linear-to-br from-blue-500 via-purple-500 to-pink-500 h-40 rounded-lg overflow-hidden">
-              <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                <div className="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center">
-                  <BookOutlined className="text-blue-600 text-2xl" />
+            <div className="relative bg-blue-500 h-32 sm:h-40 rounded-lg overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full shadow-lg flex items-center justify-center">
+                  <BookOutlined className="text-blue-600 text-xl sm:text-2xl" />
                 </div>
               </div>
             </div>

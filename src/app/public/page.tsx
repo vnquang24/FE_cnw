@@ -47,7 +47,7 @@ const HeroSection = () => {
               >
                 Học tập không giới hạn với{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                  CNW Platform
+                  LearnHub
                 </span>
               </Title>
               <Paragraph className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed">
@@ -400,7 +400,7 @@ const FeaturesSection = () => {
             level={2}
             className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4"
           >
-            Tại sao chọn CNW Platform?
+            Tại sao chọn LearnHub?
           </Title>
           <Paragraph className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
             Chúng tôi cung cấp trải nghiệm học tập tốt nhất với những tính năng
@@ -444,8 +444,8 @@ const CTASection = () => {
             Sẵn sàng bắt đầu hành trình học tập?
           </Title>
           <Paragraph className="text-base sm:text-lg md:text-xl text-blue-100">
-            Tham gia cùng hàng nghìn học viên đã tin tưởng và lựa chọn CNW
-            Platform để phát triển kỹ năng và sự nghiệp của họ.
+            Tham gia cùng hàng nghìn học viên đã tin tưởng và lựa chọn LearnHub
+            để phát triển kỹ năng và sự nghiệp của họ.
           </Paragraph>
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-0 sm:space-x-4 pt-4 justify-center items-center">
             <Button

@@ -21,6 +21,28 @@ function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Auto-fill form from URL params for demo purposes
+  const emailParam = searchParams?.get("email") || "";
+  const passwordParam = searchParams?.get("password") || "";
+  const autoLoginParam = searchParams?.get("autoLogin") === "true";
+
+  // Set initial form values from URL params
+  useState(() => {
+    if (emailParam || passwordParam) {
+      form.setFieldsValue({
+        email: emailParam,
+        password: passwordParam,
+      });
+
+      // Auto login if autoLogin=true
+      if (autoLoginParam && emailParam && passwordParam) {
+        setTimeout(() => {
+          form.submit();
+        }, 500);
+      }
+    }
+  });
+
   const onFinish = async (values: LoginFormData) => {
     setIsLoading(true);
     const loadingToast = showToast.loading("Đang đăng nhập...");
@@ -76,16 +98,16 @@ function LoginFormContent() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-96 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-center min-h-96 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <Card
-        className="max-w-md w-full shadow-xl"
-        styles={{ body: { padding: "32px" } }}
+        className="w-full max-w-md shadow-xl"
+        styles={{ body: { padding: "24px 24px 32px" } }}
       >
-        <div className="text-center mb-8">
-          <Title level={2} className="!mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <Title level={2} className="!mb-2 text-xl sm:text-2xl">
             Đăng nhập
           </Title>
-          <Text type="secondary" className="text-base">
+          <Text type="secondary" className="text-sm sm:text-base">
             Chào mừng bạn quay trở lại
           </Text>
         </div>

@@ -23,7 +23,7 @@ export default function AuthLayout({
               />
             </svg>
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">EduSystem</h1>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900">LearnHub</h1>
           <p className="mt-2 text-sm text-gray-600">
             Hệ thống học tập trực tuyến
           </p>
@@ -34,7 +34,7 @@ export default function AuthLayout({
 
         {/* Footer */}
         <footer className="text-center py-6 text-sm text-gray-500">
-          © 2025 EduSystem. Tất cả quyền được bảo lưu.
+          © 2025 LearnHub. Tất cả quyền được bảo lưu.
         </footer>
       </div>
     </div>

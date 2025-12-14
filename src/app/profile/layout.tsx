@@ -23,7 +23,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
     <SharedLayout
       menuItems={menuToUse}
       title="Quản lý thông tin"
-      logoText="EduSystem"
+      logoText="LearnHub"
     >
       {children}
     </SharedLayout>

@@ -238,20 +238,28 @@ const ManageDevicePage: React.FC = () => {
     }) || [];
 
   return (
-    <div style={{ padding: "24px" }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
-        <Col>
-          <Title level={2}>Quản lý thiết bị</Title>
-          <Text type="secondary">
+    <div>
+      <Row
+        justify="space-between"
+        align="middle"
+        className="mb-4 sm:mb-6"
+        gutter={[16, 16]}
+      >
+        <Col xs={24} sm={16}>
+          <Title level={2} className="!mb-2 text-xl sm:text-2xl">
+            Quản lý thiết bị
+          </Title>
+          <Text type="secondary" className="text-sm sm:text-base">
             Quản lý các thiết bị đang đăng nhập tài khoản của bạn
           </Text>
         </Col>
-        <Col>
+        <Col xs={24} sm={8} style={{ textAlign: "right" }}>
           <Button
             icon={<ReloadOutlined />}
             onClick={() => refetch()}
             loading={isLoading}
             type="default"
+            className="w-full sm:w-auto"
           >
             Làm mới
           </Button>

@@ -23,7 +23,7 @@ export default function DevicesLayout({ children }: { children: ReactNode }) {
     <SharedLayout
       menuItems={menuToUse}
       title="Quản lý thiết bị"
-      logoText="EduSystem"
+      logoText="LearnHub"
     >
       {children}
     </SharedLayout>

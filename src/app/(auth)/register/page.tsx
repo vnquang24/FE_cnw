@@ -58,14 +58,18 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-96 py-12 px-4">
+    <div className="flex items-center justify-center min-h-96 py-8 sm:py-12 px-4 sm:px-6">
       <Card
-        className="max-w-md w-full shadow-xl"
-        styles={{ body: { padding: "32px" } }}
+        className="w-full max-w-md shadow-xl"
+        styles={{ body: { padding: "24px 24px 32px" } }}
       >
-        <div className="text-center mb-8">
-          <Title level={2}>Đăng ký</Title>
-          <Text type="secondary">Tạo tài khoản để bắt đầu học tập</Text>
+        <div className="text-center mb-6 sm:mb-8">
+          <Title level={2} className="text-xl sm:text-2xl">
+            Đăng ký
+          </Title>
+          <Text type="secondary" className="text-sm sm:text-base">
+            Tạo tài khoản để bắt đầu học tập
+          </Text>
         </div>
 
         <Form

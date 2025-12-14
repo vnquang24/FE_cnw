@@ -61,7 +61,9 @@ export default function PublicLayout({
 
   // Prevent scrolling when mobile menu is open
   useEffect(() => {
-    if (!collapsed) {
+    // Only apply overflow hidden on mobile when menu is open
+    const isMobile = window.innerWidth < 1024; // lg breakpoint
+    if (!collapsed && isMobile) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";

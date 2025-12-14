@@ -376,7 +376,7 @@ export default function CourseDetailPage() {
     <div>
       <main className="flex-1">
         {/* Breadcrumb */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Link
             href="/admin/courses"
             className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1 mb-4"
@@ -384,22 +384,22 @@ export default function CourseDetailPage() {
             <ChevronLeft className="w-4 h-4" />
             Quay lại danh sách khóa học
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             Chi tiết khóa học
           </h1>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
-          {/* Main Content - 2 columns */}
-          <div className="col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Main Content - 2 columns on large screens */}
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Course Info Card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start justify-between mb-4 gap-3">
+                <div className="w-full sm:w-auto">
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
                     {course.title}
                   </h2>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Tag color={statusInfo.color}>{statusInfo.text}</Tag>
                     <Tag color={levelInfo.color}>{levelInfo.text}</Tag>
                   </div>
@@ -431,16 +431,16 @@ export default function CourseDetailPage() {
             </div>
 
             {/* Lessons Card - Now with full table */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                   Danh sách bài học ({lessons?.length || 0})
                 </h3>
                 <Button
                   type="primary"
                   icon={<Plus className="w-4 h-4" />}
                   onClick={handleAddLesson}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                 >
                   Thêm bài học
                 </Button>
@@ -485,13 +485,13 @@ export default function CourseDetailPage() {
           </div>
 
           {/* Sidebar - 1 column */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Stats Card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
               <h3 className="text-sm font-medium text-gray-600 mb-4">
                 Thông tin khóa học
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
                     <Clock className="w-5 h-5 text-blue-600" />

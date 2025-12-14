@@ -95,7 +95,7 @@ const Sidebar: React.FC = () => {
               className="!mb-0"
               style={{ color: token.colorText }}
             >
-              EduSystem
+              LearnHub
             </Title>
           )}
         </Link>

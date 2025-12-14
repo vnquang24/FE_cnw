@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EduSystem - Hệ thống học tập trực tuyến",
+  title: "LearnHub - Hệ thống học tập trực tuyến",
   description:
     "Nền tảng học tập hiện đại giúp bạn nâng cao kiến thức và kỹ năng",
 };

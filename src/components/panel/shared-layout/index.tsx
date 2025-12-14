@@ -28,7 +28,7 @@ export default function SharedLayout({
   children,
   menuItems,
   title,
-  logoText = "EduSystem",
+  logoText = "LearnHub",
   requiredRole,
   redirectPath,
 }: SharedLayoutProps) {
@@ -303,9 +303,9 @@ export default function SharedLayout({
           </div>
         )} */}
 
-        {/* Toggle Button - Fixed position */}
+        {/* Toggle Button - Fixed position - Hidden on mobile */}
         <div
-          className="fixed top-1/2 -translate-y-1/2 z-50 transition-all duration-300"
+          className="hidden lg:block fixed top-1/2 -translate-y-1/2 z-50 transition-all duration-300"
           style={{
             left: isShowSidebar ? "54px" : "246px",
           }}
@@ -314,13 +314,14 @@ export default function SharedLayout({
             type="text"
             icon={
               isShowSidebar ? (
-                <ChevronRight size={16} />
+                <ChevronRight size={12} />
               ) : (
-                <ChevronLeft size={16} />
+                <ChevronLeft size={12} />
               )
             }
             onClick={handleToggleSidebar}
-            className="rounded-full shadow-md hover:shadow-lg w-8 h-8 flex items-center justify-center p-0"
+            shape="circle"
+            className="shadow-md hover:shadow-lg !w-6 !h-6 !min-w-0 flex items-center justify-center"
             style={{
               backgroundColor: token.colorBgContainer,
               border: `1px solid ${token.colorBorderSecondary}`,
@@ -434,9 +435,9 @@ export default function SharedLayout({
             avatar: userData?.avatarUrl || undefined,
           }}
           pathName={title}
-          onMenuClick={() => setIsMobileOpen(true)}
+          onMenuClick={() => setIsMobileOpen(!isMobileOpen)}
         />
-        <Content className="flex-1 overflow-y-auto bg-gray-50 p-3">
+        <Content className="flex-1 overflow-y-auto bg-gray-50 p-2 sm:p-3 md:p-4 lg:p-6">
           {children}
         </Content>
       </Layout>

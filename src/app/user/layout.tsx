@@ -13,7 +13,7 @@ export default function UserLayout({
     <SharedLayout
       menuItems={userMenuItems}
       title="Khu vực học viên"
-      logoText="EduSystem"
+      logoText="LearnHub"
       requiredRole="USER"
       redirectPath="/admin/dashboard"
     >

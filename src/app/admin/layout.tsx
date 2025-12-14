@@ -15,7 +15,7 @@ export default function AdminLayout({
       <SharedLayout
         menuItems={menuItems}
         title="Dashboard"
-        logoText="EduSystem"
+        logoText="LearnHub"
         requiredRole="ADMIN"
         redirectPath="/user/courses"
       >
