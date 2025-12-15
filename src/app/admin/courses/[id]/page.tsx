@@ -37,6 +37,7 @@ import { useLessonModal } from "@/components/modal/LessonModalContext";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getUserId } from "@/lib/auth";
+import { Can } from "@/components/permissions/Can";
 
 interface LessonData {
   id: string;
@@ -348,25 +349,29 @@ export default function CourseDetailPage() {
           >
             Xem
           </Button>
-          <Button
-            type="default"
-            size="small"
-            icon={<Edit className="w-4 h-4" />}
-            onClick={() => handleEditLesson(record)}
-            className="text-gray-600 hover:text-gray-700"
-          >
-            Sửa
-          </Button>
-          <Button
-            type="default"
-            size="small"
-            icon={<Trash2 className="w-4 h-4" />}
-            onClick={() => handleDeleteLesson(record.id)}
-            className="text-red-600 hover:text-red-700"
-            danger
-          >
-            Xóa
-          </Button>
+          <Can do="UPDATE" on="Lesson">
+            <Button
+              type="default"
+              size="small"
+              icon={<Edit className="w-4 h-4" />}
+              onClick={() => handleEditLesson(record)}
+              className="text-gray-600 hover:text-gray-700"
+            >
+              Sửa
+            </Button>
+          </Can>
+          <Can do="DELETE" on="Lesson">
+            <Button
+              type="default"
+              size="small"
+              icon={<Trash2 className="w-4 h-4" />}
+              onClick={() => handleDeleteLesson(record.id)}
+              className="text-red-600 hover:text-red-700"
+              danger
+            >
+              Xóa
+            </Button>
+          </Can>
         </Space>
       ),
     },
@@ -436,14 +441,16 @@ export default function CourseDetailPage() {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                   Danh sách bài học ({lessons?.length || 0})
                 </h3>
-                <Button
-                  type="primary"
-                  icon={<Plus className="w-4 h-4" />}
-                  onClick={handleAddLesson}
-                  className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
-                >
-                  Thêm bài học
-                </Button>
+                <Can do="CREATE" on="Lesson">
+                  <Button
+                    type="primary"
+                    icon={<Plus className="w-4 h-4" />}
+                    onClick={handleAddLesson}
+                    className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                  >
+                    Thêm bài học
+                  </Button>
+                </Can>
               </div>
 
               <Table
@@ -469,14 +476,16 @@ export default function CourseDetailPage() {
                       <p className="text-sm text-gray-400 mb-4">
                         Tạo bài học đầu tiên cho khóa học này
                       </p>
-                      <Button
-                        type="primary"
-                        icon={<Plus className="w-4 h-4" />}
-                        onClick={handleAddLesson}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        Thêm bài học
-                      </Button>
+                      <Can do="CREATE" on="Lesson">
+                        <Button
+                          type="primary"
+                          icon={<Plus className="w-4 h-4" />}
+                          onClick={handleAddLesson}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          Thêm bài học
+                        </Button>
+                      </Can>
                     </div>
                   ),
                 }}

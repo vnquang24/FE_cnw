@@ -49,6 +49,7 @@ import {
   useDeleteComponent,
 } from "@/generated/hooks";
 import ManageQuestions from "./components/ManageQuestions";
+import { Can } from "@/components/permissions/Can";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -470,22 +471,26 @@ export default function TestsPage() {
           >
             Xem
           </Button>
-          <Button
-            type="link"
-            icon={<Edit size={14} />}
-            size="small"
-            onClick={() => handleEditClick(record)}
-          >
-            Sửa
-          </Button>
-          <Button
-            type="link"
-            icon={<FileText size={14} />}
-            size="small"
-            onClick={() => handleManageQuestions(record)}
-          >
-            Câu hỏi
-          </Button>
+          <Can do="UPDATE" on="Test">
+            <Button
+              type="link"
+              icon={<Edit size={14} />}
+              size="small"
+              onClick={() => handleEditClick(record)}
+            >
+              Sửa
+            </Button>
+          </Can>
+          <Can do="UPDATE" on="Question">
+            <Button
+              type="link"
+              icon={<FileText size={14} />}
+              size="small"
+              onClick={() => handleManageQuestions(record)}
+            >
+              Câu hỏi
+            </Button>
+          </Can>
           <Button
             type="link"
             icon={<CheckCircle size={14} />}
@@ -494,15 +499,17 @@ export default function TestsPage() {
           >
             Kết quả
           </Button>
-          <Button
-            type="link"
-            danger
-            icon={<Trash2 size={14} />}
-            size="small"
-            onClick={() => handleDeleteTest(record.id)}
-          >
-            Xóa
-          </Button>
+          <Can do="DELETE" on="Test">
+            <Button
+              type="link"
+              danger
+              icon={<Trash2 size={14} />}
+              size="small"
+              onClick={() => handleDeleteTest(record.id)}
+            >
+              Xóa
+            </Button>
+          </Can>
         </Space>
       ),
     },
@@ -667,14 +674,16 @@ export default function TestsPage() {
               </div>
             </Col>
             <Col xs={24} lg={6} style={{ textAlign: "right" }}>
-              <Button
-                type="primary"
-                icon={<Plus size={14} />}
-                onClick={() => setModalState({ type: "create", open: true })}
-                className="w-full sm:w-auto"
-              >
-                Tạo bài kiểm tra mới
-              </Button>
+              <Can do="CREATE" on="Test">
+                <Button
+                  type="primary"
+                  icon={<Plus size={14} />}
+                  onClick={() => setModalState({ type: "create", open: true })}
+                  className="w-full sm:w-auto"
+                >
+                  Tạo bài kiểm tra mới
+                </Button>
+              </Can>
             </Col>
           </Row>
         </Form>

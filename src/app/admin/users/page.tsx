@@ -43,6 +43,7 @@ import {
 import { useAuthControllerRegister } from "@/generated/api/cnwComponents";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { Can } from "@/components/permissions/Can";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -423,38 +424,44 @@ function UsersPageContent() {
           >
             Xem
           </Button>
-          <Button
-            type="link"
-            icon={<Edit className="w-4 h-4" />}
-            size="small"
-            onClick={() => handleEdit(record)}
-          >
-            Sửa
-          </Button>
-          <Button
-            type="link"
-            danger={record.locked}
-            icon={
-              record.locked ? (
-                <Unlock className="w-4 h-4" />
-              ) : (
-                <Lock className="w-4 h-4" />
-              )
-            }
-            size="small"
-            onClick={() => handleToggleLock(record)}
-          >
-            {record.locked ? "Mở khóa" : "Khóa"}
-          </Button>
-          <Button
-            type="link"
-            danger
-            icon={<Trash2 className="w-4 h-4" />}
-            size="small"
-            onClick={() => handleDelete(record.id)}
-          >
-            Xóa
-          </Button>
+          <Can do="UPDATE" on="User">
+            <Button
+              type="link"
+              icon={<Edit className="w-4 h-4" />}
+              size="small"
+              onClick={() => handleEdit(record)}
+            >
+              Sửa
+            </Button>
+          </Can>
+          <Can do="UPDATE" on="User">
+            <Button
+              type="link"
+              danger={record.locked}
+              icon={
+                record.locked ? (
+                  <Unlock className="w-4 h-4" />
+                ) : (
+                  <Lock className="w-4 h-4" />
+                )
+              }
+              size="small"
+              onClick={() => handleToggleLock(record)}
+            >
+              {record.locked ? "Mở khóa" : "Khóa"}
+            </Button>
+          </Can>
+          <Can do="DELETE" on="User">
+            <Button
+              type="link"
+              danger
+              icon={<Trash2 className="w-4 h-4" />}
+              size="small"
+              onClick={() => handleDelete(record.id)}
+            >
+              Xóa
+            </Button>
+          </Can>
         </Space>
       ),
     },
@@ -541,14 +548,16 @@ function UsersPageContent() {
             </div>
           </Col>
           <Col xs={24} lg={6} style={{ textAlign: "right" }}>
-            <Button
-              type="primary"
-              icon={<Plus size={14} />}
-              onClick={handleCreate}
-              className="w-full sm:w-auto"
-            >
-              Thêm người dùng mới
-            </Button>
+            <Can do="CREATE" on="User">
+              <Button
+                type="primary"
+                icon={<Plus size={14} />}
+                onClick={handleCreate}
+                className="w-full sm:w-auto"
+              >
+                Thêm người dùng mới
+              </Button>
+            </Can>
           </Col>
         </Row>
       </Card>

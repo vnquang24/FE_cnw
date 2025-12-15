@@ -1,34 +1,28 @@
 enum PermissionName {
-  AdministrativeUnit
-  Category
-  Disaster
-  Media
-  RescueTypeOnDisaster
-  
-  // Administrative units - specific permissions
-  Province
-  District
-  Commune
-  
-  // Category entities - specific permissions  
-  DisasterType
-  PriorityLevel
-  EmergencyLevel
-  DataField
-  RescueType
-  
   // User management
   User
   UserGroup
   Permission
   
-  // Geographic entities
-  Zone
-  Coordinate
-  
   // System entities
   Device
   RefreshToken
+  
+  // Course management
+  Course
+  Lesson
+  Test
+  Question
+  Answer
+  Component
+  Word
+  MediaFile
+  VideoContent
+  
+  // User progress tracking
+  UserCourse
+  UserLesson
+  TestResult
 }
 
 enum UserRole {

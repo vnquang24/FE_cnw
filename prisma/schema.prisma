@@ -13,26 +13,23 @@ generator client {
 }
 
 enum PermissionName {
-  AdministrativeUnit
-  Category
-  Disaster
-  Media
-  RescueTypeOnDisaster
-  Province
-  District
-  Commune
-  DisasterType
-  PriorityLevel
-  EmergencyLevel
-  DataField
-  RescueType
   User
   UserGroup
   Permission
-  Zone
-  Coordinate
   Device
   RefreshToken
+  Course
+  Lesson
+  Test
+  Question
+  Answer
+  Component
+  Word
+  MediaFile
+  VideoContent
+  UserCourse
+  UserLesson
+  TestResult
 }
 
 enum UserRole {

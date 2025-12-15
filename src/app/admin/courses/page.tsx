@@ -38,6 +38,7 @@ import {
 } from "@/components/admin/courses/CourseFormDialog";
 import { showToast } from "@/lib/toast";
 import { getUserId } from "@/lib/auth";
+import { Can } from "@/components/permissions/Can";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -266,25 +267,29 @@ export default function CoursesPage() {
           >
             Xem
           </Button>
-          <Button
-            type="link"
-            icon={<Edit size={14} />}
-            size="small"
-            onClick={() => handleEditClick(record.id)}
-          >
-            Sửa
-          </Button>
-          <Button
-            type="link"
-            danger
-            icon={<Trash2 size={14} />}
-            size="small"
-            onClick={() => {
-              handleDelete(record.id);
-            }}
-          >
-            Xóa
-          </Button>
+          <Can do="UPDATE" on="Course">
+            <Button
+              type="link"
+              icon={<Edit size={14} />}
+              size="small"
+              onClick={() => handleEditClick(record.id)}
+            >
+              Sửa
+            </Button>
+          </Can>
+          <Can do="DELETE" on="Course">
+            <Button
+              type="link"
+              danger
+              icon={<Trash2 size={14} />}
+              size="small"
+              onClick={() => {
+                handleDelete(record.id);
+              }}
+            >
+              Xóa
+            </Button>
+          </Can>
         </Space>
       ),
     },
@@ -392,15 +397,17 @@ export default function CoursesPage() {
             </div>
           </Col>
           <Col xs={24} lg={6} style={{ textAlign: "right" }}>
-            <Button
-              type="primary"
-              icon={<Plus size={14} />}
-              onClick={handleAddClick}
-              block={true} // Full width on mobile via standard ant behavior if container is small? No, using className usually.
-              className="w-full sm:w-auto"
-            >
-              Thêm khóa học mới
-            </Button>
+            <Can do="CREATE" on="Course">
+              <Button
+                type="primary"
+                icon={<Plus size={14} />}
+                onClick={handleAddClick}
+                block={true} // Full width on mobile via standard ant behavior if container is small? No, using className usually.
+                className="w-full sm:w-auto"
+              >
+                Thêm khóa học mới
+              </Button>
+            </Can>
           </Col>
         </Row>
       </Card>

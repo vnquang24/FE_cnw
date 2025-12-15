@@ -22,6 +22,7 @@ import {
   Target,
   UserCog,
   Smartphone,
+  Shield,
 } from "lucide-react";
 import { MenuItem } from "@/components/panel/menu-item/type";
 
@@ -69,6 +70,11 @@ export const menuItems: MenuItem[] = [
     icon: Users,
     label: "Quản lý người dùng",
     pathname: "/admin/users",
+  },
+  {
+    icon: Shield,
+    label: "Phân quyền",
+    pathname: "/admin/permissions",
   },
   {
     icon: UserCog,

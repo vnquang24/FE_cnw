@@ -11,6 +11,7 @@ import Header from "../header";
 import { MenuItem } from "../menu-item/type";
 import { useFindUniqueUser } from "@/generated/hooks";
 import { getUserInitials, getAvatarColorByRole } from "@/lib/profile-utils";
+import { AbilityProvider } from "@/lib/permissions/AbilityContext";
 
 const { Sider, Content } = Layout;
 const { Text, Title } = Typography;
@@ -438,7 +439,7 @@ export default function SharedLayout({
           onMenuClick={() => setIsMobileOpen(!isMobileOpen)}
         />
         <Content className="flex-1 overflow-y-auto bg-gray-50 p-2 sm:p-3 md:p-4 lg:p-6">
-          {children}
+          <AbilityProvider>{children}</AbilityProvider>
         </Content>
       </Layout>
     </Layout>

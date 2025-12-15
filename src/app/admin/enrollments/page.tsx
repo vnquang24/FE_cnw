@@ -40,6 +40,7 @@ import { useFindManyUserCourse, useUpdateUserCourse } from "@/generated/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { InfoBadge } from "@/components/ui/info-badge";
+import { Can } from "@/components/permissions/Can";
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
@@ -450,20 +451,24 @@ function EnrollmentsPageContent() {
               size="small"
               style={{ display: "flex", justifyContent: "center" }}
             >
-              <Button
-                type="text"
-                size="small"
-                icon={<CheckCircle size={18} style={{ color: "#52c41a" }} />}
-                onClick={() => handleApprove(record)}
-                title="Duyệt"
-              />
-              <Button
-                type="text"
-                size="small"
-                icon={<XCircle size={18} style={{ color: "#ff4d4f" }} />}
-                onClick={() => handleReject(record)}
-                title="Từ chối"
-              />
+              <Can do="UPDATE" on="UserCourse">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<CheckCircle size={18} style={{ color: "#52c41a" }} />}
+                  onClick={() => handleApprove(record)}
+                  title="Duyệt"
+                />
+              </Can>
+              <Can do="UPDATE" on="UserCourse">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<XCircle size={18} style={{ color: "#ff4d4f" }} />}
+                  onClick={() => handleReject(record)}
+                  title="Từ chối"
+                />
+              </Can>
             </Space>
           );
         }
@@ -478,20 +483,24 @@ function EnrollmentsPageContent() {
               size="small"
               style={{ display: "flex", justifyContent: "center" }}
             >
-              <Button
-                type="text"
-                size="small"
-                icon={<Calendar size={18} style={{ color: "#1677ff" }} />}
-                onClick={() => handleExtend(record)}
-                title="Gia hạn"
-              />
-              <Button
-                type="text"
-                size="small"
-                icon={<XCircle size={18} style={{ color: "#ff4d4f" }} />}
-                onClick={() => handleCancel(record)}
-                title="Hủy"
-              />
+              <Can do="UPDATE" on="UserCourse">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<Calendar size={18} style={{ color: "#1677ff" }} />}
+                  onClick={() => handleExtend(record)}
+                  title="Gia hạn"
+                />
+              </Can>
+              <Can do="UPDATE" on="UserCourse">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<XCircle size={18} style={{ color: "#ff4d4f" }} />}
+                  onClick={() => handleCancel(record)}
+                  title="Hủy"
+                />
+              </Can>
             </Space>
           );
         }
