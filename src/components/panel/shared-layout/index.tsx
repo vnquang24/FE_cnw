@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, type ReactNode } from "react";
+import React, { useEffect, useState, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Layout, Spin, Button, Space, Avatar, Typography, theme } from "antd";
 import { PanelsTopLeft, ChevronLeft, ChevronRight } from "lucide-react";
@@ -9,9 +9,10 @@ import { useStoreState, useStoreActions } from "@/lib/redux/hook";
 import MenuItemComponent from "../menu-item";
 import Header from "../header";
 import { MenuItem } from "../menu-item/type";
+import { filterMenuItemsByPermission } from "../menu-item/utils";
 import { useFindUniqueUser } from "@/generated/hooks";
 import { getUserInitials, getAvatarColorByRole } from "@/lib/profile-utils";
-import { AbilityProvider } from "@/lib/permissions/AbilityContext";
+import { AbilityProvider, useAbility } from "@/lib/permissions/AbilityContext";
 
 const { Sider, Content } = Layout;
 const { Text, Title } = Typography;
@@ -25,20 +26,21 @@ interface SharedLayoutProps {
   redirectPath?: string;
 }
 
-export default function SharedLayout({
+// Component nội bộ với AbilityProvider
+function SharedLayoutContent({
   children,
   menuItems,
   title,
   logoText = "LearnHub",
   requiredRole,
   redirectPath,
-}: SharedLayoutProps) {
+  userInfo,
+}: SharedLayoutProps & { userInfo: JwtPayload }) {
   const router = useRouter();
   const { token } = theme.useToken();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [userInfo, setUserInfo] = useState<JwtPayload | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const ability = useAbility();
 
   // Fetch user data including avatar
   const userQueryArgs = useMemo(
@@ -68,54 +70,7 @@ export default function SharedLayout({
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    const verifyAuth = async () => {
-      try {
-        const valid = await isTokenValid();
-        if (!active) return;
-
-        if (!valid) {
-          await logout();
-          router.replace("/login");
-          return;
-        }
-
-        const info = getUserInfo();
-        if (!info) {
-          await logout();
-          router.replace("/login");
-          return;
-        }
-
-        // Kiểm tra role nếu có yêu cầu
-        if (requiredRole && info.role !== requiredRole) {
-          const fallback =
-            redirectPath ||
-            (info.role === "ADMIN" ? "/admin/dashboard" : "/user/courses");
-          router.replace(fallback);
-          return;
-        }
-
-        setUserInfo(info);
-      } catch (error) {
-        if (active) {
-          await logout();
-          router.replace("/login");
-        }
-      } finally {
-        if (active) {
-          setIsCheckingAuth(false);
-        }
-      }
-    };
-
-    verifyAuth();
-
-    return () => {
-      active = false;
-    };
-  }, [router, requiredRole, redirectPath]);
+  // Removed auth check - moved to parent component
 
   const handleToggleSidebar = () => {
     setIsShowSidebar(!isShowSidebar);
@@ -126,45 +81,11 @@ export default function SharedLayout({
     router.replace("/login");
   };
 
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
-        <Spin size="large" />
-        <div className="text-gray-600">Đang kiểm tra phiên đăng nhập...</div>
-      </div>
-    );
-  }
-
-  if (!userInfo) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center space-y-4">
-          <div className="text-red-600 text-lg font-medium">
-            Không thể tải thông tin người dùng
-          </div>
-          <p className="text-gray-600">
-            Phiên đăng nhập của bạn có thể đã hết hạn
-          </p>
-          <Button
-            type="primary"
-            size="large"
-            onClick={async () => {
-              try {
-                await logout();
-                router.push("/login");
-              } catch (error) {
-                console.error("Logout error:", error);
-                // Force redirect even if logout fails
-                router.push("/login");
-              }
-            }}
-          >
-            Quay lại trang đăng nhập
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Filter menu items dựa trên permissions
+  const filteredMenuItems = React.useMemo(
+    () => filterMenuItemsByPermission(menuItems, ability),
+    [menuItems, ability],
+  );
 
   // Render placeholder ban đầu để tránh hydration error
   if (!mounted) {
@@ -282,16 +203,14 @@ export default function SharedLayout({
         {/* Menu Items */}
         <div className="flex-1 overflow-y-auto">
           <div className={isShowSidebar ? "px-1" : "px-2"}>
-            {menuItems
-              .filter((item) => !item.hidden)
-              .map((item) => (
-                <MenuItemComponent
-                  key={item.label}
-                  item={item}
-                  depth={0}
-                  hidden={item.hidden}
-                />
-              ))}
+            {filteredMenuItems.map((item) => (
+              <MenuItemComponent
+                key={item.label}
+                item={item}
+                depth={0}
+                hidden={item.hidden}
+              />
+            ))}
           </div>
         </div>
 
@@ -401,19 +320,14 @@ export default function SharedLayout({
         {/* Menu Items Mobile */}
         <div className="flex-1 overflow-y-auto">
           <div className="px-2">
-            {menuItems
-              .filter((item) => !item.hidden)
-              .map((item) => (
-                <MenuItemComponent
-                  key={item.label}
-                  item={item}
-                  depth={0}
-                  hidden={item.hidden}
-                  // We might want to close sidebar on click?
-                  // MenuItemComponent might need a prop or we wrap it?
-                  // For now, let's leave it. Navigating usually unmounts/remounts or changes path.
-                />
-              ))}
+            {filteredMenuItems.map((item) => (
+              <MenuItemComponent
+                key={item.label}
+                item={item}
+                depth={0}
+                hidden={item.hidden}
+              />
+            ))}
           </div>
         </div>
 
@@ -439,9 +353,125 @@ export default function SharedLayout({
           onMenuClick={() => setIsMobileOpen(!isMobileOpen)}
         />
         <Content className="flex-1 overflow-y-auto bg-gray-50 p-2 sm:p-3 md:p-4 lg:p-6">
-          <AbilityProvider>{children}</AbilityProvider>
+          {children}
         </Content>
       </Layout>
     </Layout>
+  );
+}
+
+// Main exported component với auth check
+export default function SharedLayout({
+  children,
+  menuItems,
+  title,
+  logoText = "LearnHub",
+  requiredRole,
+  redirectPath,
+}: SharedLayoutProps) {
+  const router = useRouter();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [userInfo, setUserInfo] = useState<JwtPayload | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const verifyAuth = async () => {
+      try {
+        const valid = await isTokenValid();
+        if (!active) return;
+
+        if (!valid) {
+          await logout();
+          router.replace("/login");
+          return;
+        }
+
+        const info = getUserInfo();
+        if (!info) {
+          await logout();
+          router.replace("/login");
+          return;
+        }
+
+        // Kiểm tra role nếu có yêu cầu
+        if (requiredRole && info.role !== requiredRole) {
+          const fallback =
+            redirectPath ||
+            (info.role === "ADMIN" ? "/admin/dashboard" : "/user/courses");
+          router.replace(fallback);
+          return;
+        }
+
+        setUserInfo(info);
+      } catch (error) {
+        if (active) {
+          await logout();
+          router.replace("/login");
+        }
+      } finally {
+        if (active) {
+          setIsCheckingAuth(false);
+        }
+      }
+    };
+
+    verifyAuth();
+
+    return () => {
+      active = false;
+    };
+  }, [router, requiredRole, redirectPath]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
+        <Spin size="large" />
+        <div className="text-gray-600">Đang kiểm tra phiên đăng nhập...</div>
+      </div>
+    );
+  }
+
+  if (!userInfo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center space-y-4">
+          <div className="text-red-600 text-lg font-medium">
+            Không thể tải thông tin người dùng
+          </div>
+          <p className="text-gray-600">
+            Phiên đăng nhập của bạn có thể đã hết hạn
+          </p>
+          <Button
+            type="primary"
+            size="large"
+            onClick={async () => {
+              try {
+                await logout();
+                router.push("/login");
+              } catch (error) {
+                console.error("Logout error:", error);
+                router.push("/login");
+              }
+            }}
+          >
+            Quay lại trang đăng nhập
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <AbilityProvider>
+      <SharedLayoutContent
+        children={children}
+        menuItems={menuItems}
+        title={title}
+        logoText={logoText}
+        requiredRole={requiredRole}
+        redirectPath={redirectPath}
+        userInfo={userInfo}
+      />
+    </AbilityProvider>
   );
 }

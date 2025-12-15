@@ -12,4 +12,9 @@ export interface MenuItem {
   pathname: string;
   subMenu?: MenuItem[];
   hidden?: boolean;
+  // Permission requirements - optional
+  requiredPermission?: {
+    action: string; // e.g., "READ", "CREATE", "UPDATE", "DELETE"
+    resource: string; // e.g., "User", "Course", "Test"
+  };
 }

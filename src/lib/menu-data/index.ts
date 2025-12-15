@@ -36,6 +36,10 @@ export const menuItems: MenuItem[] = [
     icon: GraduationCap,
     label: "Quản lý khóa học",
     pathname: "/admin/courses",
+    requiredPermission: {
+      action: "READ",
+      resource: "Course",
+    },
     subMenu: [
       {
         label: "Danh sách khóa học",
@@ -53,6 +57,10 @@ export const menuItems: MenuItem[] = [
     icon: ClipboardCheck,
     label: "Bài kiểm tra",
     pathname: "",
+    requiredPermission: {
+      action: "READ",
+      resource: "Test",
+    },
     subMenu: [
       {
         label: "Danh sách bài kiểm tra",
@@ -70,11 +78,19 @@ export const menuItems: MenuItem[] = [
     icon: Users,
     label: "Quản lý người dùng",
     pathname: "/admin/users",
+    requiredPermission: {
+      action: "READ",
+      resource: "User",
+    },
   },
   {
     icon: Shield,
     label: "Phân quyền",
     pathname: "/admin/permissions",
+    requiredPermission: {
+      action: "READ",
+      resource: "Permission",
+    },
   },
   {
     icon: UserCog,
